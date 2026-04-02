@@ -1,10 +1,48 @@
 {
   "chain_leaders": {
-    "ethereum": {},
-    "arbitrum": {},
+    "ethereum": {
+      "liquidity": {
+        "name": "SolvBTC",
+        "liquidity_usd": 6614071.5,
+        "volume_24h": 355892.32
+      },
+      "volume": {
+        "name": "Euler V2",
+        "liquidity_usd": 730888.76,
+        "volume_24h": 679006.03
+      }
+    },
+    "arbitrum": {
+      "liquidity": {
+        "name": "Pendle",
+        "liquidity_usd": 777082.92,
+        "volume_24h": 101651.27
+      },
+      "volume": {
+        "name": "Pendle",
+        "liquidity_usd": 777082.92,
+        "volume_24h": 101651.27
+      }
+    },
     "base": {},
     "bsc": {},
     "polygon": {}
   },
-  "top_projects": []
+  "top_projects": [
+    {
+      "name": "SolvBTC",
+      "score": 42,
+      "chain": "ethereum"
+    },
+    {
+      "name": "Euler V2",
+      "score": 40,
+      "chain": "ethereum"
+    },
+    {
+      "name": "Dolomite",
+      "score": 40,
+      "chain": "ethereum"
+    }
+  ]
 }
