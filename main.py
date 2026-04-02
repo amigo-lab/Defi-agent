@@ -850,7 +850,7 @@ def build_unified_top(
         for token in chain_data["all"]:
             name = token["name"]
             if is_bad_name(name):
-            continue
+                continue
 
             key = normalize_name(name)
             if key not in merged:
@@ -864,7 +864,7 @@ def build_unified_top(
         name = base.get("symbol") or base.get("name") or ""
 
         if is_bad_name(name):
-        continue
+            continue
 
         key = normalize_name(name)
         liq = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
