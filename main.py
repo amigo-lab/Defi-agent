@@ -31,6 +31,7 @@ ALLOWED_CATEGORIES = {
     "RWA",
 }
 
+# BSC / Polygon 검색 기반 모니터링용
 BSC_SEARCH_TERMS = [
     "PancakeSwap",
     "Venus",
@@ -52,6 +53,12 @@ POLYGON_SEARCH_TERMS = [
     "Sushi",
     "Kyber",
 ]
+
+# 진짜 돈 버는 프로토콜 모드 기준
+REAL_EARNER_MIN_FEES_30D = 100_000
+REAL_EARNER_MIN_REVENUE_30D = 20_000
+REAL_EARNER_MIN_LIQUIDITY = 150_000
+REAL_EARNER_MAX_FDV_LIQ_RATIO = 30
 
 
 def send_telegram_message(text: str) -> None:
@@ -125,6 +132,7 @@ def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
     r = requests.get(DEX_SEARCH_URL, params={"q": query}, timeout=30)
     if r.status_code == 400:
         return []
+
     r.raise_for_status()
     data = r.json()
     return data.get("pairs", []) or []
@@ -251,31 +259,24 @@ def get_fee_revenue_metrics(protocol: Dict[str, Any]) -> Dict[str, Optional[floa
 
 
 def passes_profitability_filter(protocol: Dict[str, Any], pair: Dict[str, Any]) -> bool:
+    """
+    메인 투자 후보용 기본 필터.
+    수익성 데이터가 없다고 바로 제거하지 않음.
+    유동성/거래량/FDV 과열만 먼저 걸러냄.
+    """
     liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
     fdv = to_float(pair.get("fdv"), 0.0) or 0.0
-
-    metrics = get_fee_revenue_metrics(protocol)
-    fees_30d = metrics["fees_30d"]
-    revenue_30d = metrics["revenue_30d"]
+    volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
 
     fdv_liquidity_ratio = (fdv / liquidity_usd) if liquidity_usd > 0 and fdv > 0 else 0.0
 
-    if liquidity_usd < 150_000:
+    if liquidity_usd < 100_000:
         return False
 
-    if fdv_liquidity_ratio > 30:
+    if volume_24h < 50_000:
         return False
 
-    if fees_30d is None:
-        return False
-
-    if revenue_30d is None:
-        return False
-
-    if fees_30d < 100_000:
-        return False
-
-    if revenue_30d < 20_000:
+    if fdv_liquidity_ratio > 40:
         return False
 
     return True
@@ -370,8 +371,8 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
 
     # Fees
     if fees_30d is None:
-        score -= 20
-        reasons.append("Fees 없음 → 구조 의심")
+        score -= 15
+        reasons.append("Fees 데이터 부족")
     elif fees_30d >= 5_000_000:
         score += 8
         reasons.append("Fees 30d가 강함")
@@ -386,8 +387,8 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
 
     # Revenue
     if revenue_30d is None:
-        score -= 22
-        reasons.append("Revenue 없음 → 자동 경고")
+        score -= 18
+        reasons.append("Revenue 데이터 부족")
     elif revenue_30d >= 1_000_000:
         score += 10
         reasons.append("Revenue 30d가 강함")
@@ -461,6 +462,31 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         "verdict": verdict,
         "reasons": reasons[:7],
     }
+
+
+def is_real_earner(project: Dict[str, Any]) -> bool:
+    """
+    진짜 돈 버는 프로토콜만 따로 뽑는 모드.
+    """
+    fees_30d = to_float(project.get("fees_30d"), None)
+    revenue_30d = to_float(project.get("revenue_30d"), None)
+    liquidity_usd = to_float(project.get("liquidity_usd"), 0.0) or 0.0
+    fdv_liquidity_ratio = to_float(project.get("fdv_liquidity_ratio"), 0.0) or 0.0
+
+    if fees_30d is None:
+        return False
+    if revenue_30d is None:
+        return False
+    if fees_30d < REAL_EARNER_MIN_FEES_30D:
+        return False
+    if revenue_30d < REAL_EARNER_MIN_REVENUE_30D:
+        return False
+    if liquidity_usd < REAL_EARNER_MIN_LIQUIDITY:
+        return False
+    if fdv_liquidity_ratio > REAL_EARNER_MAX_FDV_LIQ_RATIO:
+        return False
+
+    return True
 
 
 def build_chain_leaders(projects: List[Dict[str, Any]]) -> Dict[str, Dict[str, Dict[str, Any]]]:
@@ -574,13 +600,21 @@ def build_message(
     changes: List[str]
 ) -> str:
     top_projects = sorted(projects, key=lambda x: x["score"], reverse=True)[:3]
+    real_earners = sorted(
+        [p for p in projects if is_real_earner(p)],
+        key=lambda x: (
+            to_float(x.get("revenue_30d"), 0.0) or 0.0,
+            x["score"]
+        ),
+        reverse=True
+    )[:3]
 
     lines = []
     lines.append("[오늘의 진짜 디파이 투자 분석 결과]")
     lines.append("")
 
     if not top_projects:
-        lines.append("수익성 필터를 통과한 프로젝트가 없습니다.")
+        lines.append("기본 필터를 통과한 프로젝트가 없습니다.")
     else:
         for idx, p in enumerate(top_projects, start=1):
             lines.append(f"{idx}) {p['name']} ({p['symbol']})")
@@ -605,6 +639,23 @@ def build_message(
             lines.append(f"- 링크: {p['pair_url']}")
             lines.append("")
 
+    lines.append("[진짜 돈 버는 프로토콜 모드 TOP 3]")
+    if real_earners:
+        for idx, p in enumerate(real_earners, start=1):
+            lines.append(f"{idx}) {p['name']} ({p['symbol']})")
+            lines.append(f"- 체인: {p['chain']} / 카테고리: {p['category']}")
+            lines.append(f"- Revenue 30d: {fmt_num(p['revenue_30d'])}")
+            lines.append(f"- Fees 30d: {fmt_num(p['fees_30d'])}")
+            lines.append(f"- TVL: {fmt_num(p['tvl'])}")
+            lines.append(f"- 유동성: {fmt_num(p['liquidity_usd'])}")
+            lines.append(f"- FDV/유동성: {p['fdv_liquidity_ratio']:.2f}")
+            lines.append(f"- 점수: {p['score']}")
+            lines.append("")
+    else:
+        lines.append("- 조건 충족 프로젝트 없음")
+        lines.append(f"  기준: Fees30d ≥ {fmt_num(REAL_EARNER_MIN_FEES_30D)}, Revenue30d ≥ {fmt_num(REAL_EARNER_MIN_REVENUE_30D)}, 유동성 ≥ {fmt_num(REAL_EARNER_MIN_LIQUIDITY)}")
+        lines.append("")
+
     lines.append("[체인별 유동성 1위]")
     for chain in ["ethereum", "arbitrum", "base", "bsc", "polygon"]:
         data = leaders.get(chain, {})
@@ -612,7 +663,7 @@ def build_message(
             p = data["liquidity"]
             lines.append(f"- {chain}: {p['name']} / 유동성 {fmt_num(p['liquidity_usd'])}")
         else:
-            lines.append(f"- {chain}: 수익성 필터 통과 프로젝트 없음")
+            lines.append(f"- {chain}: 기본 필터 통과 프로젝트 없음")
 
     lines.append("")
     lines.append("[체인별 거래량 1위]")
@@ -622,7 +673,7 @@ def build_message(
             p = data["volume"]
             lines.append(f"- {chain}: {p['name']} / 24h 거래량 {fmt_num(p['volume_24h'])}")
         else:
-            lines.append(f"- {chain}: 수익성 필터 통과 프로젝트 없음")
+            lines.append(f"- {chain}: 기본 필터 통과 프로젝트 없음")
 
     bsc_top3 = build_chain_top3_from_search("bsc", BSC_SEARCH_TERMS)
     polygon_top3 = build_chain_top3_from_search("polygon", POLYGON_SEARCH_TERMS)
