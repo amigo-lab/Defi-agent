@@ -28,7 +28,7 @@ ALLOWED_CHAINS = {
 
 CHAIN_TO_GECKO = {
     "polygon": "polygon_pos",
-    "bsc": "bsc",
+    "bsc": "binance-smart-chain",  # ← 수정: "bsc" → "binance-smart-chain"
 }
 
 ALLOWED_CATEGORIES = {
@@ -689,12 +689,10 @@ def gecko_pool_to_record(pool: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if reserve < GECKO_MIN_LIQUIDITY:
         return None
 
-    # 핵심 수정 1: fee 정보 제거, 앞 2개 토큰만 사용
     parts = [x.strip() for x in name.split("/")[:2] if x.strip()]
     if not parts:
         return None
 
-    # 핵심 수정 2: 스테이블/기축 제외 후 실제 토큰 선택
     token_name = None
 
     if len(parts) >= 2:
