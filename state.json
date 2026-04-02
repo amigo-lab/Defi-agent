@@ -3,13 +3,13 @@
     "ethereum": {
       "liquidity": {
         "name": "Spark Savings",
-        "liquidity_usd": 50015935.81,
-        "volume_24h": 31610527.29
+        "liquidity_usd": 50016285.7,
+        "volume_24h": 31381055.52
       },
       "volume": {
         "name": "Spark Savings",
-        "liquidity_usd": 50015935.81,
-        "volume_24h": 31610527.29
+        "liquidity_usd": 50016285.7,
+        "volume_24h": 31381055.52
       }
     },
     "arbitrum": {
@@ -27,13 +27,13 @@
     "base": {
       "liquidity": {
         "name": "Centrifuge Protocol",
-        "liquidity_usd": 2024477.84,
-        "volume_24h": 101157.52
+        "liquidity_usd": 1999851.77,
+        "volume_24h": 101208.12
       },
       "volume": {
         "name": "Centrifuge Protocol",
-        "liquidity_usd": 2024477.84,
-        "volume_24h": 101157.52
+        "liquidity_usd": 1999851.77,
+        "volume_24h": 101208.12
       }
     },
     "bsc": {},
