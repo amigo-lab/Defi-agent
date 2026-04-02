@@ -1,4 +1,57 @@
 {
-  "chain_leaders": {},
-  "top_projects": []
+  "chain_leaders": {
+    "ethereum": {
+      "liquidity": {
+        "name": "Spark Savings",
+        "liquidity_usd": 50016237.25,
+        "volume_24h": 31850168.96
+      },
+      "volume": {
+        "name": "Spark Savings",
+        "liquidity_usd": 50016237.25,
+        "volume_24h": 31850168.96
+      }
+    },
+    "arbitrum": {
+      "liquidity": {
+        "name": "Pendle",
+        "liquidity_usd": 784824.27,
+        "volume_24h": 97886.54
+      },
+      "volume": {
+        "name": "Pendle",
+        "liquidity_usd": 784824.27,
+        "volume_24h": 97886.54
+      }
+    },
+    "base": {
+      "liquidity": {
+        "name": "Centrifuge Protocol",
+        "liquidity_usd": 2024477.75,
+        "volume_24h": 106573.0
+      },
+      "volume": {
+        "name": "Centrifuge Protocol",
+        "liquidity_usd": 2024477.75,
+        "volume_24h": 106573.0
+      }
+    }
+  },
+  "top_projects": [
+    {
+      "name": "Ondo Yield Assets",
+      "score": 92,
+      "chain": "ethereum"
+    },
+    {
+      "name": "Euler V2",
+      "score": 83,
+      "chain": "ethereum"
+    },
+    {
+      "name": "Dolomite",
+      "score": 83,
+      "chain": "ethereum"
+    }
+  ]
 }
