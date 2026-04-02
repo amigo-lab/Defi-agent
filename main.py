@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
@@ -92,7 +92,14 @@ def get_llama_protocols() -> List[Dict[str, Any]]:
 
 
 def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
+    query = (query or "").strip()
+    if not query:
+        return []
+
     r = requests.get(DEX_SEARCH_URL, params={"q": query}, timeout=30)
+    if r.status_code == 400:
+        return []
+
     r.raise_for_status()
     data = r.json()
     return data.get("pairs", []) or []
@@ -113,15 +120,22 @@ def filter_llama_protocols(protocols: List[Dict[str, Any]]) -> List[Dict[str, An
             continue
 
         result.append(p)
+
     return sorted(result, key=lambda x: to_float(x.get("tvl")), reverse=True)
 
 
 def choose_best_pair_for_protocol(protocol: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    name = protocol.get("name") or ""
-    symbol = protocol.get("symbol") or ""
-    queries = [name]
-    if symbol:
+    name = (protocol.get("name") or "").strip()
+    symbol = (protocol.get("symbol") or "").strip()
+
+    queries = []
+    if name:
+        queries.append(name)
+    if symbol and symbol.lower() != name.lower():
         queries.append(symbol)
+
+    if not queries:
+        return None
 
     all_pairs: List[Dict[str, Any]] = []
     for q in queries:
@@ -306,7 +320,11 @@ def compare_leaders(
     return messages
 
 
-def build_message(projects: List[Dict[str, Any]], leaders: Dict[str, Dict[str, Dict[str, Any]]], changes: List[str]) -> str:
+def build_message(
+    projects: List[Dict[str, Any]],
+    leaders: Dict[str, Dict[str, Dict[str, Any]]],
+    changes: List[str]
+) -> str:
     top_projects = sorted(projects, key=lambda x: x["score"], reverse=True)[:3]
 
     lines = []
