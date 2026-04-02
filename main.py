@@ -8,8 +8,6 @@ TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
 LLAMA_PROTOCOLS_URL = "https://api.llama.fi/protocols"
 DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
-DEX_TOP_BOOSTS_URL = "https://api.dexscreener.com/token-boosts/top/v1"
-DEX_TOKEN_PAIRS_URL = "https://api.dexscreener.com/token-pairs/v1/{chain_id}/{token_address}"
 
 STATE_FILE = "state.json"
 
@@ -32,6 +30,29 @@ ALLOWED_CATEGORIES = {
     "CDP",
     "RWA",
 }
+
+# BSC / Polygon 별도 모니터링용 검색 키워드
+BSC_SEARCH_TERMS = [
+    "PancakeSwap",
+    "Venus",
+    "THENA",
+    "Lista",
+    "Biswap",
+    "Wombat",
+    "Helio",
+    "Aster",
+]
+
+POLYGON_SEARCH_TERMS = [
+    "LGNS",
+    "QuickSwap",
+    "Aave",
+    "Uniswap",
+    "Balancer",
+    "Curve",
+    "Sushi",
+    "Kyber",
+]
 
 
 def send_telegram_message(text: str) -> None:
@@ -105,51 +126,6 @@ def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
     r.raise_for_status()
     data = r.json()
     return data.get("pairs", []) or []
-
-
-def get_top_boosted_tokens(limit: int = 50) -> List[Dict[str, Any]]:
-    r = requests.get(DEX_TOP_BOOSTS_URL, timeout=30)
-    r.raise_for_status()
-    data = r.json()
-    if not isinstance(data, list):
-        return []
-    return data[:limit]
-
-
-def get_token_pairs(chain_id: str, token_address: str) -> List[Dict[str, Any]]:
-    url = DEX_TOKEN_PAIRS_URL.format(chain_id=chain_id, token_address=token_address)
-    r = requests.get(url, timeout=30)
-    if r.status_code == 400:
-        return []
-    r.raise_for_status()
-    data = r.json()
-    if not isinstance(data, list):
-        return []
-    return data
-
-
-def choose_best_pair(pairs: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-    if not pairs:
-        return None
-
-    valid_pairs = []
-    for p in pairs:
-        liquidity_usd = to_float((p.get("liquidity") or {}).get("usd"))
-        volume_24h = to_float((p.get("volume") or {}).get("h24"))
-        if liquidity_usd <= 0 and volume_24h <= 0:
-            continue
-        valid_pairs.append(p)
-
-    if not valid_pairs:
-        return None
-
-    return max(
-        valid_pairs,
-        key=lambda p: (
-            to_float((p.get("liquidity") or {}).get("usd")),
-            to_float((p.get("volume") or {}).get("h24")),
-        ),
-    )
 
 
 def filter_llama_protocols(protocols: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -370,41 +346,58 @@ def compare_leaders(
     return messages
 
 
-def build_chain_top3_from_dex(chain_name: str) -> Dict[str, List[Dict[str, Any]]]:
-    boosted = get_top_boosted_tokens(limit=50)
+def deduplicate_monitor_projects(projects: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    deduped: List[Dict[str, Any]] = []
+    seen = set()
+
+    for p in projects:
+        key = (
+            (p.get("name") or "").lower(),
+            (p.get("symbol") or "").lower(),
+            p.get("pair_url") or "",
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(p)
+
+    return deduped
+
+
+def build_chain_top3_from_search(chain_name: str, search_terms: List[str]) -> Dict[str, List[Dict[str, Any]]]:
     projects = []
 
-    for token in boosted:
-        token_chain = (token.get("chainId") or "").lower()
-        token_address = token.get("tokenAddress")
+    for term in search_terms:
+        pairs = search_dex_pairs(term)
 
-        if token_chain != chain_name:
-            continue
-        if not token_address:
-            continue
+        for pair in pairs:
+            pair_chain = (pair.get("chainId") or "").lower()
+            if pair_chain != chain_name:
+                continue
 
-        pairs = get_token_pairs(token_chain, token_address)
-        best_pair = choose_best_pair(pairs)
-        if not best_pair:
-            continue
+            liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"))
+            volume_24h = to_float((pair.get("volume") or {}).get("h24"))
 
-        base = best_pair.get("baseToken") or {}
+            # 별도 모니터링은 너무 빡빡하지 않게 최소 조건만
+            if liquidity_usd < 10_000 and volume_24h < 5_000:
+                continue
 
-        project = {
-            "name": base.get("name") or "-",
-            "symbol": base.get("symbol") or "-",
-            "liquidity_usd": to_float((best_pair.get("liquidity") or {}).get("usd")),
-            "volume_24h": to_float((best_pair.get("volume") or {}).get("h24")),
-            "fdv": to_float(best_pair.get("fdv")),
-            "market_cap": to_float(best_pair.get("marketCap")),
-            "price_usd": to_float(best_pair.get("priceUsd"), None),
-            "pair_url": best_pair.get("url") or "-",
-        }
+            base = pair.get("baseToken") or {}
 
-        if project["liquidity_usd"] < 30000 and project["volume_24h"] < 20000:
-            continue
+            project = {
+                "name": base.get("name") or "-",
+                "symbol": base.get("symbol") or "-",
+                "liquidity_usd": liquidity_usd,
+                "volume_24h": volume_24h,
+                "fdv": to_float(pair.get("fdv")),
+                "market_cap": to_float(pair.get("marketCap")),
+                "price_usd": to_float(pair.get("priceUsd"), None),
+                "pair_url": pair.get("url") or "-",
+            }
 
-        projects.append(project)
+            projects.append(project)
+
+    projects = deduplicate_monitor_projects(projects)
 
     top_liquidity = sorted(projects, key=lambda x: x["liquidity_usd"], reverse=True)[:3]
     top_volume = sorted(projects, key=lambda x: x["volume_24h"], reverse=True)[:3]
@@ -467,8 +460,8 @@ def build_message(
         else:
             lines.append(f"- {chain}: 조건 통과 프로젝트 없음")
 
-    bsc_top3 = build_chain_top3_from_dex("bsc")
-    polygon_top3 = build_chain_top3_from_dex("polygon")
+    bsc_top3 = build_chain_top3_from_search("bsc", BSC_SEARCH_TERMS)
+    polygon_top3 = build_chain_top3_from_search("polygon", POLYGON_SEARCH_TERMS)
 
     lines.append("")
     lines.append("[BSC 별도 모니터링 - 유동성 TOP 3]")
