@@ -8,20 +8,20 @@
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 730888.76,
-        "volume_24h": 679006.03
+        "liquidity_usd": 731638.36,
+        "volume_24h": 680102.06
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 777082.92,
-        "volume_24h": 101651.27
+        "liquidity_usd": 783864.93,
+        "volume_24h": 101002.52
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 777082.92,
-        "volume_24h": 101651.27
+        "liquidity_usd": 783864.93,
+        "volume_24h": 101002.52
       }
     },
     "base": {},
