@@ -8,20 +8,20 @@
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 731682.72,
-        "volume_24h": 704441.61
+        "liquidity_usd": 732178.88,
+        "volume_24h": 706537.39
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
         "liquidity_usd": 777453.28,
-        "volume_24h": 94286.87
+        "volume_24h": 92757.74
       },
       "volume": {
         "name": "Pendle",
         "liquidity_usd": 777453.28,
-        "volume_24h": 94286.87
+        "volume_24h": 92757.74
       }
     },
     "base": {},
@@ -49,53 +49,53 @@
     "polygon": {
       "lgns": {
         "name": "LGNS",
-        "liquidity_usd": 486578631.1015,
-        "volume_24h": 39858372.9529933
+        "liquidity_usd": 486833864.4711,
+        "volume_24h": 39884131.0036614
       },
       "as": {
         "name": "AS",
-        "liquidity_usd": 15401421.7056,
-        "volume_24h": 402285.597397601
+        "liquidity_usd": 15403737.2915,
+        "volume_24h": 402741.069706145
       },
       "slgns019": {
         "name": "sLGNS 0.19%",
-        "liquidity_usd": 398132.9328,
-        "volume_24h": 1673420.73117061
+        "liquidity_usd": 398271.911,
+        "volume_24h": 1675322.2876994
       },
       "ces": {
         "name": "CES",
-        "liquidity_usd": 2032851.2776000001,
-        "volume_24h": 1353665.819830617
+        "liquidity_usd": 2033660.7209,
+        "volume_24h": 1304489.110642466
       },
       "lgns0304": {
         "name": "LGNS 0.304%",
-        "liquidity_usd": 128536.5891,
-        "volume_24h": 863729.558948737
+        "liquidity_usd": 128656.9134,
+        "volume_24h": 865466.186539039
       },
       "cnkt": {
         "name": "CNKT+",
-        "liquidity_usd": 772021.5459,
-        "volume_24h": 434298.413393789
+        "liquidity_usd": 772990.8236,
+        "volume_24h": 429887.9721101379
       },
       "aipf": {
         "name": "AIPF",
-        "liquidity_usd": 2093307.2094,
-        "volume_24h": 140048.99209033
+        "liquidity_usd": 2094132.3204,
+        "volume_24h": 140527.192417371
       },
       "link": {
         "name": "LINK",
-        "liquidity_usd": 395470.1566,
-        "volume_24h": 208532.4574510592
-      },
-      "nava": {
-        "name": "NAVA",
-        "liquidity_usd": 195865.0039,
-        "volume_24h": 415551.349992669
+        "liquidity_usd": 395481.2743,
+        "volume_24h": 207247.22643819518
       },
       "pix": {
         "name": "PiX",
-        "liquidity_usd": 3435512.5859,
-        "volume_24h": 13967.4357049435
+        "liquidity_usd": 3434264.1003,
+        "volume_24h": 13965.5636502723
+      },
+      "nava": {
+        "name": "NAVA",
+        "liquidity_usd": 196311.4229,
+        "volume_24h": 387829.794776419
       },
       "geod": {
         "name": "GEOD",
@@ -104,68 +104,68 @@
       },
       "orbs": {
         "name": "ORBS",
-        "liquidity_usd": 370592.2914,
+        "liquidity_usd": 370781.3617,
         "volume_24h": 41054.9391189136
       },
       "quick": {
         "name": "QUICK",
-        "liquidity_usd": 170759.5308,
-        "volume_24h": 76394.7914094083
+        "liquidity_usd": 170676.8165,
+        "volume_24h": 75910.8842809028
       },
       "aave03": {
         "name": "AAVE 0.3%",
-        "liquidity_usd": 210220.7293,
-        "volume_24h": 144556.869297561
+        "liquidity_usd": 213853.7972,
+        "volume_24h": 145091.447229581
       },
       "edx": {
         "name": "EDX",
-        "liquidity_usd": 52596.3433,
-        "volume_24h": 135.2277887379
+        "liquidity_usd": 52569.984,
+        "volume_24h": 137.5513401092
       },
       "uni": {
         "name": "UNI",
-        "liquidity_usd": 90436.5239,
-        "volume_24h": 52058.0149351502
+        "liquidity_usd": 90333.2053,
+        "volume_24h": 51963.1049747193
       },
       "aave": {
         "name": "AAVE",
-        "liquidity_usd": 92304.3239,
-        "volume_24h": 46619.4571545716
+        "liquidity_usd": 92417.5334,
+        "volume_24h": 46771.0309614256
       },
       "tel02": {
         "name": "TEL 0.2%",
-        "liquidity_usd": 738751.9322,
-        "volume_24h": 58656.9628827232
+        "liquidity_usd": 737001.0232,
+        "volume_24h": 58161.7219129374
       },
       "idl": {
         "name": "IDL",
-        "liquidity_usd": 1416078.5657,
-        "volume_24h": 42003.8366255927
+        "liquidity_usd": 1415523.8606,
+        "volume_24h": 42593.8557145801
       },
       "brz": {
         "name": "BRZ",
-        "liquidity_usd": 70677.5658,
-        "volume_24h": 97021.542243246
+        "liquidity_usd": 70627.1326,
+        "volume_24h": 99617.2473268962
       },
       "ebcc": {
         "name": "EBCC",
-        "liquidity_usd": 153238.0692,
-        "volume_24h": 16165.028501647
+        "liquidity_usd": 154062.4813,
+        "volume_24h": 16151.3363887902
       },
       "tel03": {
         "name": "TEL 0.3%",
-        "liquidity_usd": 136596.0767,
-        "volume_24h": 145355.065159536
+        "liquidity_usd": 136889.9318,
+        "volume_24h": 143220.725590735
       },
       "brla005": {
         "name": "BRLA 0.05%",
-        "liquidity_usd": 188088.8605,
-        "volume_24h": 209232.269960511
+        "liquidity_usd": 188291.2473,
+        "volume_24h": 203393.335500329
       },
       "tel": {
         "name": "TEL",
-        "liquidity_usd": 250108.5079,
-        "volume_24h": 84645.8219224969
+        "liquidity_usd": 250150.0612,
+        "volume_24h": 84673.6556286328
       }
     },
     "bsc": {}
@@ -173,53 +173,53 @@
   "unified_flow": {
     "lgns": {
       "name": "LGNS",
-      "liq": 1461286826.0814998,
-      "vol": 151461031.9829933
+      "liq": 1461657127.6011,
+      "vol": 151369017.65366146
     },
     "ark": {
       "name": "ARK",
-      "liq": 79374333.56,
-      "vol": 6130739.35
+      "liq": 79371536.68,
+      "vol": 6121596.81
     },
     "aster": {
       "name": "ASTER",
-      "liq": 8681081.99,
-      "vol": 15375311.380000006
+      "liq": 8686062.760000002,
+      "vol": 15374512.719999999
     },
     "as": {
       "name": "AS",
-      "liq": 30806871.5956,
-      "vol": 905044.797397601
+      "liq": 30806523.491499998,
+      "vol": 905348.709706145
     },
     "koge": {
       "name": "KOGE",
-      "liq": 5192129.3,
-      "vol": 10300512.73
+      "liq": 5192129.84,
+      "vol": 10268857.75
     },
     "oly": {
       "name": "OLY",
-      "liq": 13032408.17,
-      "vol": 632511.02
+      "liq": 13029186.44,
+      "vol": 631835.65
     },
     "siren": {
       "name": "SIREN",
-      "liq": 4074546.62,
-      "vol": 3599347.34
+      "liq": 4081737.73,
+      "vol": 3578725.97
     },
     "tag": {
       "name": "TAG",
-      "liq": 2500897.37,
-      "vol": 6544412.45
+      "liq": 2484710.9299999997,
+      "vol": 6557554.77
+    },
+    "stbl": {
+      "name": "STBL",
+      "liq": 1946946.57,
+      "vol": 3314783.51
     },
     "bank": {
       "name": "BANK",
-      "liq": 672154.76,
-      "vol": 13866802.57
-    },
-    "coai": {
-      "name": "COAI",
-      "liq": 1760726.62,
-      "vol": 3159112.63
+      "liq": 675134.93,
+      "vol": 13686870.78
     }
   }
 }
