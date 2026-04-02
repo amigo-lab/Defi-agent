@@ -3,39 +3,41 @@
     "ethereum": {
       "liquidity": {
         "name": "Spark Savings",
-        "liquidity_usd": 50016237.25,
-        "volume_24h": 31850168.96
+        "liquidity_usd": 50015935.81,
+        "volume_24h": 31610527.29
       },
       "volume": {
         "name": "Spark Savings",
-        "liquidity_usd": 50016237.25,
-        "volume_24h": 31850168.96
+        "liquidity_usd": 50015935.81,
+        "volume_24h": 31610527.29
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 784824.27,
-        "volume_24h": 97886.54
+        "liquidity_usd": 780073.62,
+        "volume_24h": 100948.67
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 784824.27,
-        "volume_24h": 97886.54
+        "liquidity_usd": 780073.62,
+        "volume_24h": 100948.67
       }
     },
     "base": {
       "liquidity": {
         "name": "Centrifuge Protocol",
-        "liquidity_usd": 2024477.75,
-        "volume_24h": 106573.0
+        "liquidity_usd": 2024477.84,
+        "volume_24h": 101157.52
       },
       "volume": {
         "name": "Centrifuge Protocol",
-        "liquidity_usd": 2024477.75,
-        "volume_24h": 106573.0
+        "liquidity_usd": 2024477.84,
+        "volume_24h": 101157.52
       }
-    }
+    },
+    "bsc": {},
+    "polygon": {}
   },
   "top_projects": [
     {
