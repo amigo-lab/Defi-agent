@@ -1,59 +1,10 @@
 {
   "chain_leaders": {
-    "ethereum": {
-      "liquidity": {
-        "name": "Spark Savings",
-        "liquidity_usd": 50016285.7,
-        "volume_24h": 30139460.6
-      },
-      "volume": {
-        "name": "Spark Savings",
-        "liquidity_usd": 50016285.7,
-        "volume_24h": 30139460.6
-      }
-    },
-    "arbitrum": {
-      "liquidity": {
-        "name": "Pendle",
-        "liquidity_usd": 780073.62,
-        "volume_24h": 98298.68
-      },
-      "volume": {
-        "name": "Pendle",
-        "liquidity_usd": 780073.62,
-        "volume_24h": 98298.68
-      }
-    },
-    "base": {
-      "liquidity": {
-        "name": "Centrifuge Protocol",
-        "liquidity_usd": 865264.25,
-        "volume_24h": 3103205.55
-      },
-      "volume": {
-        "name": "Centrifuge Protocol",
-        "liquidity_usd": 865264.25,
-        "volume_24h": 3103205.55
-      }
-    },
+    "ethereum": {},
+    "arbitrum": {},
+    "base": {},
     "bsc": {},
     "polygon": {}
   },
-  "top_projects": [
-    {
-      "name": "Euler V2",
-      "score": 61,
-      "chain": "ethereum"
-    },
-    {
-      "name": "Dolomite",
-      "score": 61,
-      "chain": "ethereum"
-    },
-    {
-      "name": "Tether Gold",
-      "score": 58,
-      "chain": "ethereum"
-    }
-  ]
+  "top_projects": []
 }
