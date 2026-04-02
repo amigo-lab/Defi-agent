@@ -8,6 +8,8 @@ TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
 LLAMA_PROTOCOLS_URL = "https://api.llama.fi/protocols"
 DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
+DEX_TOP_BOOSTS_URL = "https://api.dexscreener.com/token-boosts/top/v1"
+DEX_TOKEN_PAIRS_URL = "https://api.dexscreener.com/token-pairs/v1/{chain_id}/{token_address}"
 
 STATE_FILE = "state.json"
 
@@ -103,6 +105,51 @@ def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
     r.raise_for_status()
     data = r.json()
     return data.get("pairs", []) or []
+
+
+def get_top_boosted_tokens(limit: int = 50) -> List[Dict[str, Any]]:
+    r = requests.get(DEX_TOP_BOOSTS_URL, timeout=30)
+    r.raise_for_status()
+    data = r.json()
+    if not isinstance(data, list):
+        return []
+    return data[:limit]
+
+
+def get_token_pairs(chain_id: str, token_address: str) -> List[Dict[str, Any]]:
+    url = DEX_TOKEN_PAIRS_URL.format(chain_id=chain_id, token_address=token_address)
+    r = requests.get(url, timeout=30)
+    if r.status_code == 400:
+        return []
+    r.raise_for_status()
+    data = r.json()
+    if not isinstance(data, list):
+        return []
+    return data
+
+
+def choose_best_pair(pairs: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not pairs:
+        return None
+
+    valid_pairs = []
+    for p in pairs:
+        liquidity_usd = to_float((p.get("liquidity") or {}).get("usd"))
+        volume_24h = to_float((p.get("volume") or {}).get("h24"))
+        if liquidity_usd <= 0 and volume_24h <= 0:
+            continue
+        valid_pairs.append(p)
+
+    if not valid_pairs:
+        return None
+
+    return max(
+        valid_pairs,
+        key=lambda p: (
+            to_float((p.get("liquidity") or {}).get("usd")),
+            to_float((p.get("volume") or {}).get("h24")),
+        ),
+    )
 
 
 def filter_llama_protocols(protocols: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -280,10 +327,12 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
 
 
 def build_chain_leaders(projects: List[Dict[str, Any]]) -> Dict[str, Dict[str, Dict[str, Any]]]:
-    leaders: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    required_chains = ["ethereum", "arbitrum", "base", "bsc", "polygon"]
+    leaders: Dict[str, Dict[str, Dict[str, Any]]] = {chain: {} for chain in required_chains}
 
     for p in projects:
         chain = p["chain"]
+
         if chain not in leaders:
             leaders[chain] = {}
 
@@ -303,7 +352,8 @@ def compare_leaders(
     messages = []
     prev_leaders = prev_state.get("chain_leaders", {})
 
-    for chain, data in current_leaders.items():
+    for chain in ["ethereum", "arbitrum", "base", "bsc", "polygon"]:
+        data = current_leaders.get(chain, {})
         prev_chain = prev_leaders.get(chain, {})
 
         current_liq_name = data.get("liquidity", {}).get("name", "-")
@@ -320,6 +370,51 @@ def compare_leaders(
     return messages
 
 
+def build_chain_top3_from_dex(chain_name: str) -> Dict[str, List[Dict[str, Any]]]:
+    boosted = get_top_boosted_tokens(limit=50)
+    projects = []
+
+    for token in boosted:
+        token_chain = (token.get("chainId") or "").lower()
+        token_address = token.get("tokenAddress")
+
+        if token_chain != chain_name:
+            continue
+        if not token_address:
+            continue
+
+        pairs = get_token_pairs(token_chain, token_address)
+        best_pair = choose_best_pair(pairs)
+        if not best_pair:
+            continue
+
+        base = best_pair.get("baseToken") or {}
+
+        project = {
+            "name": base.get("name") or "-",
+            "symbol": base.get("symbol") or "-",
+            "liquidity_usd": to_float((best_pair.get("liquidity") or {}).get("usd")),
+            "volume_24h": to_float((best_pair.get("volume") or {}).get("h24")),
+            "fdv": to_float(best_pair.get("fdv")),
+            "market_cap": to_float(best_pair.get("marketCap")),
+            "price_usd": to_float(best_pair.get("priceUsd"), None),
+            "pair_url": best_pair.get("url") or "-",
+        }
+
+        if project["liquidity_usd"] < 30000 and project["volume_24h"] < 20000:
+            continue
+
+        projects.append(project)
+
+    top_liquidity = sorted(projects, key=lambda x: x["liquidity_usd"], reverse=True)[:3]
+    top_volume = sorted(projects, key=lambda x: x["volume_24h"], reverse=True)[:3]
+
+    return {
+        "liquidity": top_liquidity,
+        "volume": top_volume,
+    }
+
+
 def build_message(
     projects: List[Dict[str, Any]],
     leaders: Dict[str, Dict[str, Dict[str, Any]]],
@@ -333,39 +428,87 @@ def build_message(
 
     if not top_projects:
         lines.append("조건을 통과한 프로젝트가 없습니다.")
-        return "\n".join(lines)
-
-    for idx, p in enumerate(top_projects, start=1):
-        lines.append(f"{idx}) {p['name']} ({p['symbol']})")
-        lines.append(f"- 판정: {p['grade']} / 점수: {p['score']}")
-        lines.append(f"- 결론: {p['verdict']}")
-        lines.append(f"- 체인: {p['chain']} / 카테고리: {p['category']}")
-        lines.append(f"- TVL: {fmt_num(p['tvl'])}")
-        lines.append(f"- 가격: {fmt_num(p['price_usd'])} USD")
-        lines.append(f"- 유동성: {fmt_num(p['liquidity_usd'])}")
-        lines.append(f"- 24h 거래량: {fmt_num(p['volume_24h'])}")
-        lines.append(f"- FDV: {fmt_num(p['fdv'])}")
-        lines.append(f"- 시총: {fmt_num(p['market_cap'])}")
-        lines.append(f"- FDV/유동성: {p['fdv_liquidity_ratio']:.2f}")
-        lines.append(f"- 거래량/유동성: {p['volume_liquidity_ratio']:.2f}")
-        lines.append(f"- TVL/유동성: {p['tvl_liquidity_ratio']:.2f}")
-        lines.append(f"- DEX: {p['dex_id']}")
-        lines.append(f"- 핵심 이유: {', '.join(p['reasons'])}")
-        lines.append(f"- 링크: {p['pair_url']}")
-        lines.append("")
+    else:
+        for idx, p in enumerate(top_projects, start=1):
+            lines.append(f"{idx}) {p['name']} ({p['symbol']})")
+            lines.append(f"- 판정: {p['grade']} / 점수: {p['score']}")
+            lines.append(f"- 결론: {p['verdict']}")
+            lines.append(f"- 체인: {p['chain']} / 카테고리: {p['category']}")
+            lines.append(f"- TVL: {fmt_num(p['tvl'])}")
+            lines.append(f"- 가격: {fmt_num(p['price_usd'])} USD")
+            lines.append(f"- 유동성: {fmt_num(p['liquidity_usd'])}")
+            lines.append(f"- 24h 거래량: {fmt_num(p['volume_24h'])}")
+            lines.append(f"- FDV: {fmt_num(p['fdv'])}")
+            lines.append(f"- 시총: {fmt_num(p['market_cap'])}")
+            lines.append(f"- FDV/유동성: {p['fdv_liquidity_ratio']:.2f}")
+            lines.append(f"- 거래량/유동성: {p['volume_liquidity_ratio']:.2f}")
+            lines.append(f"- TVL/유동성: {p['tvl_liquidity_ratio']:.2f}")
+            lines.append(f"- DEX: {p['dex_id']}")
+            lines.append(f"- 핵심 이유: {', '.join(p['reasons'])}")
+            lines.append(f"- 링크: {p['pair_url']}")
+            lines.append("")
 
     lines.append("[체인별 유동성 1위]")
-    for chain, data in leaders.items():
+    for chain in ["ethereum", "arbitrum", "base", "bsc", "polygon"]:
+        data = leaders.get(chain, {})
         if "liquidity" in data:
             p = data["liquidity"]
             lines.append(f"- {chain}: {p['name']} / 유동성 {fmt_num(p['liquidity_usd'])}")
+        else:
+            lines.append(f"- {chain}: 조건 통과 프로젝트 없음")
 
     lines.append("")
     lines.append("[체인별 거래량 1위]")
-    for chain, data in leaders.items():
+    for chain in ["ethereum", "arbitrum", "base", "bsc", "polygon"]:
+        data = leaders.get(chain, {})
         if "volume" in data:
             p = data["volume"]
             lines.append(f"- {chain}: {p['name']} / 24h 거래량 {fmt_num(p['volume_24h'])}")
+        else:
+            lines.append(f"- {chain}: 조건 통과 프로젝트 없음")
+
+    bsc_top3 = build_chain_top3_from_dex("bsc")
+    polygon_top3 = build_chain_top3_from_dex("polygon")
+
+    lines.append("")
+    lines.append("[BSC 별도 모니터링 - 유동성 TOP 3]")
+    if bsc_top3["liquidity"]:
+        for i, p in enumerate(bsc_top3["liquidity"], start=1):
+            lines.append(
+                f"{i}) {p['name']} ({p['symbol']}) / 유동성 {fmt_num(p['liquidity_usd'])} / 거래량 {fmt_num(p['volume_24h'])}"
+            )
+    else:
+        lines.append("- 후보 없음")
+
+    lines.append("")
+    lines.append("[BSC 별도 모니터링 - 거래량 TOP 3]")
+    if bsc_top3["volume"]:
+        for i, p in enumerate(bsc_top3["volume"], start=1):
+            lines.append(
+                f"{i}) {p['name']} ({p['symbol']}) / 거래량 {fmt_num(p['volume_24h'])} / 유동성 {fmt_num(p['liquidity_usd'])}"
+            )
+    else:
+        lines.append("- 후보 없음")
+
+    lines.append("")
+    lines.append("[Polygon 별도 모니터링 - 유동성 TOP 3]")
+    if polygon_top3["liquidity"]:
+        for i, p in enumerate(polygon_top3["liquidity"], start=1):
+            lines.append(
+                f"{i}) {p['name']} ({p['symbol']}) / 유동성 {fmt_num(p['liquidity_usd'])} / 거래량 {fmt_num(p['volume_24h'])}"
+            )
+    else:
+        lines.append("- 후보 없음")
+
+    lines.append("")
+    lines.append("[Polygon 별도 모니터링 - 거래량 TOP 3]")
+    if polygon_top3["volume"]:
+        for i, p in enumerate(polygon_top3["volume"], start=1):
+            lines.append(
+                f"{i}) {p['name']} ({p['symbol']}) / 거래량 {fmt_num(p['volume_24h'])} / 유동성 {fmt_num(p['liquidity_usd'])}"
+            )
+    else:
+        lines.append("- 후보 없음")
 
     lines.append("")
     lines.append("[전 실행 대비 변화]")
