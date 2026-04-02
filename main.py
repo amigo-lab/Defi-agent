@@ -41,19 +41,16 @@ ALLOWED_CATEGORIES = {
     "RWA",
 }
 
-# 통합 랭킹에서 제외할 스테이블/기축 토큰
 EXCLUDE_TOKENS = {
     "usdt", "usdc", "dai", "busd", "usde", "fdusd", "tusd",
     "weth", "eth", "wbtc", "btc", "cbbtc",
     "wbnb", "bnb", "wpol", "matic", "sol", "wsol"
 }
 
-# 잡음 제거용
 BAD_KEYWORDS = [
     "doge", "inu", "baby", "banana", "pepe", "elon", "cat", "shib", "meme"
 ]
 
-# 검색 기반 보조 후보군
 BSC_SEARCH_TERMS = [
     "PancakeSwap", "Venus", "THENA", "Lista", "Biswap", "Wombat", "Helio", "Aster"
 ]
@@ -62,7 +59,6 @@ POLYGON_SEARCH_TERMS = [
     "LGNS", "QuickSwap", "Aave", "Uniswap", "Balancer", "Curve", "Sushi", "Kyber"
 ]
 
-# 진짜 돈 버는 프로토콜 모드
 REAL_EARNER_MIN_FEES_30D = 50_000
 REAL_EARNER_MIN_REVENUE_30D = 10_000
 REAL_EARNER_MIN_LIQUIDITY = 150_000
@@ -147,6 +143,27 @@ def is_bad_name(name: str) -> bool:
 def is_excluded_token(name: str) -> bool:
     n = normalize_name(name)
     return n in EXCLUDE_TOKENS or any(x in n for x in EXCLUDE_TOKENS)
+
+
+def is_valid_token(name: str) -> bool:
+    if not name:
+        return False
+
+    n = normalize_name(name)
+
+    if n in EXCLUDE_TOKENS:
+        return False
+
+    if any(x in n for x in EXCLUDE_TOKENS):
+        return False
+
+    if is_bad_name(name):
+        return False
+
+    if len(n) < 2:
+        return False
+
+    return True
 
 
 def get_llama_protocols() -> List[Dict[str, Any]]:
@@ -664,15 +681,43 @@ def compare_leaders(prev_state: Dict[str, Any], current_leaders: Dict[str, Dict[
 def gecko_pool_to_record(pool: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     attr = pool.get("attributes", {})
     name = attr.get("name") or "-"
-    reserve = to_float(attr.get("reserve_in_usd"), 0.0) or 0.0
 
+    reserve = to_float(attr.get("reserve_in_usd"), 0.0) or 0.0
     volume_obj = attr.get("volume_usd") or {}
     volume_24h = to_float(volume_obj.get("h24"), 0.0) or 0.0
 
     if reserve < GECKO_MIN_LIQUIDITY:
         return None
 
-    token_name = name.split("/")[0].strip() or name
+    # 핵심 수정 1: fee 정보 제거, 앞 2개 토큰만 사용
+    parts = [x.strip() for x in name.split("/")[:2] if x.strip()]
+    if not parts:
+        return None
+
+    # 핵심 수정 2: 스테이블/기축 제외 후 실제 토큰 선택
+    token_name = None
+
+    if len(parts) >= 2:
+        left = parts[0]
+        right = parts[1]
+
+        left_excluded = is_excluded_token(left) or is_bad_name(left)
+        right_excluded = is_excluded_token(right) or is_bad_name(right)
+
+        if left_excluded and not right_excluded:
+            token_name = right
+        elif right_excluded and not left_excluded:
+            token_name = left
+        elif not left_excluded and not right_excluded:
+            token_name = left
+        else:
+            token_name = left
+    else:
+        token_name = parts[0]
+
+    if not token_name:
+        return None
+
     return {
         "name": token_name,
         "pool_name": name,
@@ -762,7 +807,7 @@ def build_chain_top3_gecko(chain_key: str, prev_state: Dict[str, Any]) -> Dict[s
 
     filtered = []
     for token in merged:
-        if is_excluded_token(token["name"]) or is_bad_name(token["name"]):
+        if not is_valid_token(token["name"]):
             continue
         signal_text, meta = compute_flow_signal(chain_key, token, prev_state)
         filtered.append({**token, "signal": signal_text, **meta})
@@ -799,7 +844,7 @@ def build_unified_top(
     for chain_data in [polygon_data, bsc_data]:
         for token in chain_data["all"]:
             name = token["name"]
-            if is_excluded_token(name) or is_bad_name(name):
+            if not is_valid_token(name):
                 continue
 
             key = normalize_name(name)
@@ -812,7 +857,8 @@ def build_unified_top(
     for pair in dex_pairs:
         base = pair.get("baseToken") or {}
         name = base.get("symbol") or base.get("name") or ""
-        if not name or is_excluded_token(name) or is_bad_name(name):
+
+        if not is_valid_token(name):
             continue
 
         key = normalize_name(name)
@@ -885,7 +931,7 @@ def build_message(
     unified_top = build_unified_top(polygon_top3, bsc_top3, dex_pairs, prev_state)
 
     lines = []
-    lines.append("🚀 DeFi 실전 투자 봇 v6.1 / v7")
+    lines.append("🚀 DeFi 실전 투자 봇 v7.1")
     lines.append("")
 
     lines.append("[메인 분석 TOP 3]")
@@ -974,9 +1020,6 @@ def build_message(
         lines.extend(changes)
     else:
         lines.append("- 비교 가능한 이전 데이터가 없습니다.")
-
-    lines.append("")
-    lines.append("※ v7의 '고래/유입'은 온체인 proxy 신호입니다. 정확한 CEX 라벨 주소 추적은 별도 지갑 라벨 데이터가 필요합니다.")
 
     return "\n".join(lines), polygon_top3, bsc_top3, unified_top
 
