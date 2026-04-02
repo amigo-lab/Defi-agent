@@ -4,24 +4,24 @@
       "liquidity": {
         "name": "SolvBTC",
         "liquidity_usd": 6614071.5,
-        "volume_24h": 355892.32
+        "volume_24h": 355208.47
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 731638.36,
-        "volume_24h": 680102.06
+        "liquidity_usd": 727386.27,
+        "volume_24h": 678535.54
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
         "liquidity_usd": 783864.93,
-        "volume_24h": 101002.52
+        "volume_24h": 99984.23
       },
       "volume": {
         "name": "Pendle",
         "liquidity_usd": 783864.93,
-        "volume_24h": 101002.52
+        "volume_24h": 99984.23
       }
     },
     "base": {},
@@ -44,5 +44,216 @@
       "score": 40,
       "chain": "ethereum"
     }
-  ]
+  ],
+  "gecko_chain_snapshots": {
+    "polygon": {
+      "lgns": {
+        "name": "LGNS",
+        "liquidity_usd": 486938754.6815,
+        "volume_24h": 40185788.3353983
+      },
+      "as": {
+        "name": "AS",
+        "liquidity_usd": 15411771.8868,
+        "volume_24h": 414038.445432344
+      },
+      "wpol": {
+        "name": "WPOL",
+        "liquidity_usd": 2168059.2616,
+        "volume_24h": 2558325.991405247
+      },
+      "usdc": {
+        "name": "USDC",
+        "liquidity_usd": 28228757.54550001,
+        "volume_24h": 26271630.242345016
+      },
+      "weth": {
+        "name": "WETH",
+        "liquidity_usd": 1484296.5991,
+        "volume_24h": 1511768.583052868
+      },
+      "dai": {
+        "name": "DAI",
+        "liquidity_usd": 15659985.01,
+        "volume_24h": 34683897.638204835
+      },
+      "ces": {
+        "name": "CES",
+        "liquidity_usd": 2032466.8377,
+        "volume_24h": 1606539.5128252432
+      },
+      "wbtc": {
+        "name": "WBTC",
+        "liquidity_usd": 2592492.1922000004,
+        "volume_24h": 2022156.814483949
+      },
+      "cnkt": {
+        "name": "CNKT+",
+        "liquidity_usd": 755308.6963,
+        "volume_24h": 446671.37045301194
+      },
+      "link": {
+        "name": "LINK",
+        "liquidity_usd": 169587.9741,
+        "volume_24h": 145960.096242414
+      },
+      "nava": {
+        "name": "NAVA",
+        "liquidity_usd": 193144.2287,
+        "volume_24h": 386587.459423333
+      },
+      "aipf": {
+        "name": "AIPF",
+        "liquidity_usd": 2097843.9523,
+        "volume_24h": 101487.31201113
+      },
+      "usdt": {
+        "name": "USDT",
+        "liquidity_usd": 652998.4922,
+        "volume_24h": 235738.88086382332
+      },
+      "geod": {
+        "name": "GEOD",
+        "liquidity_usd": 291720.6167,
+        "volume_24h": 53443.3390580658
+      },
+      "orbs": {
+        "name": "ORBS",
+        "liquidity_usd": 368389.2743,
+        "volume_24h": 40961.838085647
+      },
+      "quick": {
+        "name": "QUICK",
+        "liquidity_usd": 170224.2585,
+        "volume_24h": 77396.639583675
+      },
+      "a": {
+        "name": "A",
+        "liquidity_usd": 224012.06069999997,
+        "volume_24h": 378864.904920841
+      },
+      "aave": {
+        "name": "AAVE",
+        "liquidity_usd": 91885.4987,
+        "volume_24h": 48548.1506540399
+      },
+      "uni": {
+        "name": "UNI",
+        "liquidity_usd": 90101.4145,
+        "volume_24h": 52440.2270380822
+      },
+      "edx": {
+        "name": "EDX",
+        "liquidity_usd": 52721.2014,
+        "volume_24h": 130.0650489435
+      },
+      "idl": {
+        "name": "IDL",
+        "liquidity_usd": 1422694.2396,
+        "volume_24h": 39954.3738346669
+      },
+      "brz": {
+        "name": "BRZ",
+        "liquidity_usd": 70839.0569,
+        "volume_24h": 105693.333877876
+      },
+      "ebcc": {
+        "name": "EBCC",
+        "liquidity_usd": 153466.6553,
+        "volume_24h": 16761.3760828083
+      },
+      "tel": {
+        "name": "TEL",
+        "liquidity_usd": 248165.9808,
+        "volume_24h": 86317.4768205202
+      },
+      "sol": {
+        "name": "SOL",
+        "liquidity_usd": 168410.2742,
+        "volume_24h": 79565.8647355332
+      }
+    },
+    "bsc": {
+      "usdt": {
+        "name": "USDT",
+        "liquidity_usd": 49922742.0737,
+        "volume_24h": 152154968.3760029
+      },
+      "wkeydao2": {
+        "name": "wkeyDAO2",
+        "liquidity_usd": 45051327.3723,
+        "volume_24h": 12316045.6974397
+      },
+      "prl": {
+        "name": "PRL",
+        "liquidity_usd": 1305342.6999,
+        "volume_24h": 34395178.5598799
+      },
+      "bsb": {
+        "name": "BSB",
+        "liquidity_usd": 12989407.1605,
+        "volume_24h": 15193646.1194705
+      },
+      "usdc": {
+        "name": "USDC",
+        "liquidity_usd": 1960335.0596,
+        "volume_24h": 49307323.0461326
+      },
+      "rtx": {
+        "name": "RTX",
+        "liquidity_usd": 1293439.9725,
+        "volume_24h": 8542128.8805997
+      },
+      "bank": {
+        "name": "BANK",
+        "liquidity_usd": 588610.3091,
+        "volume_24h": 13245105.1431923
+      },
+      "aria": {
+        "name": "ARIA",
+        "liquidity_usd": 4518436.7169,
+        "volume_24h": 40246580.3181284
+      },
+      "quq": {
+        "name": "quq",
+        "liquidity_usd": 2662550.7803,
+        "volume_24h": 386804269.507534
+      },
+      "up": {
+        "name": "UP",
+        "liquidity_usd": 1834939.2444,
+        "volume_24h": 22177957.5039701
+      },
+      "stable": {
+        "name": "STABLE",
+        "liquidity_usd": 1190195.8317,
+        "volume_24h": 24121246.4554517
+      },
+      "on": {
+        "name": "ON",
+        "liquidity_usd": 679222.2363,
+        "volume_24h": 15277073.1669242
+      },
+      "hemi": {
+        "name": "HEMI",
+        "liquidity_usd": 377454.1404,
+        "volume_24h": 7960709.36725604
+      },
+      "crtr": {
+        "name": "CRTR",
+        "liquidity_usd": 1399423.9789,
+        "volume_24h": 4983897.46249852
+      },
+      "tag": {
+        "name": "TAG",
+        "liquidity_usd": 560400.9697,
+        "volume_24h": 3826665.18689977
+      },
+      "edge": {
+        "name": "EDGE",
+        "liquidity_usd": 1245387.4645,
+        "volume_24h": 17671965.7621978
+      }
+    }
+  }
 }
