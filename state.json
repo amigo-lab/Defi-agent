@@ -4,12 +4,12 @@
       "liquidity": {
         "name": "Spark Savings",
         "liquidity_usd": 50016285.7,
-        "volume_24h": 31381055.52
+        "volume_24h": 30928911.36
       },
       "volume": {
         "name": "Spark Savings",
         "liquidity_usd": 50016285.7,
-        "volume_24h": 31381055.52
+        "volume_24h": 30928911.36
       }
     },
     "arbitrum": {
@@ -28,12 +28,12 @@
       "liquidity": {
         "name": "Centrifuge Protocol",
         "liquidity_usd": 1999851.77,
-        "volume_24h": 101208.12
+        "volume_24h": 101204.73
       },
       "volume": {
         "name": "Centrifuge Protocol",
         "liquidity_usd": 1999851.77,
-        "volume_24h": 101208.12
+        "volume_24h": 101204.73
       }
     },
     "bsc": {},
