@@ -1,16 +1,16 @@
 import os
+import json
 import requests
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Tuple
 
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
-DEX_TOP_BOOSTS_URL = "https://api.dexscreener.com/token-boosts/top/v1"
-DEX_TOKEN_PAIRS_URL = "https://api.dexscreener.com/token-pairs/v1/{chain_id}/{token_address}"
 LLAMA_PROTOCOLS_URL = "https://api.llama.fi/protocols"
+DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
 
-# 진짜 디파이 투자용 체인만 우선 허용
+STATE_FILE = "state.json"
+
 ALLOWED_CHAINS = {
     "ethereum",
     "arbitrum",
@@ -21,72 +21,37 @@ ALLOWED_CHAINS = {
     "avalanche",
 }
 
-# DefiLlama에 없는 토큰 장난감 이름을 어느 정도 거르기 위한 키워드
-LOW_QUALITY_KEYWORDS = {
-    "inu", "pepe", "doge", "cat", "pump", "moon", "elon", "baby"
+ALLOWED_CATEGORIES = {
+    "Dexes",
+    "Lending",
+    "Yield",
+    "Derivatives",
+    "Bridge",
+    "CDP",
+    "RWA",
 }
 
 
 def send_telegram_message(text: str) -> None:
     if not TG_BOT_TOKEN or not TG_CHAT_ID:
-        raise ValueError("TG_BOT_TOKEN 또는 TG_CHAT_ID가 설정되지 않았습니다.")
+        raise ValueError("TG_BOT_TOKEN 또는 TG_CHAT_ID가 없습니다.")
 
     url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TG_CHAT_ID,
-        "text": text
-    }
-    response = requests.post(url, json=payload, timeout=20)
-    response.raise_for_status()
+    payload = {"chat_id": TG_CHAT_ID, "text": text}
+    r = requests.post(url, json=payload, timeout=30)
+    r.raise_for_status()
 
 
-def get_top_boosted_tokens(limit: int = 20) -> List[Dict[str, Any]]:
-    response = requests.get(DEX_TOP_BOOSTS_URL, timeout=20)
-    response.raise_for_status()
-    data = response.json()
-
-    if not isinstance(data, list):
-        raise ValueError("Dexscreener top boosts 응답 형식이 예상과 다릅니다.")
-
-    return data[:limit]
+def load_state() -> Dict[str, Any]:
+    if not os.path.exists(STATE_FILE):
+        return {"chain_leaders": {}, "top_projects": []}
+    with open(STATE_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
-def get_token_pairs(chain_id: str, token_address: str) -> List[Dict[str, Any]]:
-    url = DEX_TOKEN_PAIRS_URL.format(chain_id=chain_id, token_address=token_address)
-    response = requests.get(url, timeout=20)
-    response.raise_for_status()
-    data = response.json()
-
-    if not isinstance(data, list):
-        raise ValueError("Dexscreener token pairs 응답 형식이 예상과 다릅니다.")
-
-    return data
-
-
-def get_llama_protocols() -> List[Dict[str, Any]]:
-    response = requests.get(LLAMA_PROTOCOLS_URL, timeout=30)
-    response.raise_for_status()
-    data = response.json()
-
-    if not isinstance(data, list):
-        raise ValueError("DefiLlama protocols 응답 형식이 예상과 다릅니다.")
-
-    return data
-
-
-def choose_best_pair(pairs: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-    if not pairs:
-        return None
-
-    def liquidity_score(pair: Dict[str, Any]) -> float:
-        liquidity = pair.get("liquidity") or {}
-        usd = liquidity.get("usd")
-        try:
-            return float(usd) if usd is not None else 0.0
-        except (TypeError, ValueError):
-            return 0.0
-
-    return max(pairs, key=liquidity_score)
+def save_state(state: Dict[str, Any]) -> None:
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
 
 
 def to_float(value: Any, default: float = 0.0) -> float:
@@ -117,337 +82,322 @@ def fmt_num(value: Any) -> str:
     return f"{num:.6f}"
 
 
-def get_age_hours(pair_created_at: Any) -> float:
-    created_ms = to_float(pair_created_at, 0.0)
-    if created_ms <= 0:
-        return 0.0
-    created_dt = datetime.fromtimestamp(created_ms / 1000, tz=timezone.utc)
-    now_dt = datetime.now(timezone.utc)
-    delta = now_dt - created_dt
-    return max(delta.total_seconds() / 3600, 0.0)
+def get_llama_protocols() -> List[Dict[str, Any]]:
+    r = requests.get(LLAMA_PROTOCOLS_URL, timeout=30)
+    r.raise_for_status()
+    data = r.json()
+    if not isinstance(data, list):
+        raise ValueError("DefiLlama 응답 형식 오류")
+    return data
 
 
-def normalize_name(text: str) -> str:
-    return "".join(ch.lower() for ch in text if ch.isalnum())
+def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
+    r = requests.get(DEX_SEARCH_URL, params={"q": query}, timeout=30)
+    r.raise_for_status()
+    data = r.json()
+    return data.get("pairs", []) or []
 
 
-def contains_low_quality_keyword(name: str, symbol: str) -> bool:
-    combined = f"{name} {symbol}".lower()
-    return any(keyword in combined for keyword in LOW_QUALITY_KEYWORDS)
+def filter_llama_protocols(protocols: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    result = []
+    for p in protocols:
+        category = p.get("category")
+        tvl = to_float(p.get("tvl"))
+        chains = [c.lower() for c in (p.get("chains") or [])]
+
+        if category not in ALLOWED_CATEGORIES:
+            continue
+        if tvl < 10_000_000:
+            continue
+        if not any(c in ALLOWED_CHAINS for c in chains):
+            continue
+
+        result.append(p)
+    return sorted(result, key=lambda x: to_float(x.get("tvl")), reverse=True)
 
 
-def basic_filter(pair: Dict[str, Any]) -> bool:
-    chain_id = (pair.get("chainId") or "").lower()
+def choose_best_pair_for_protocol(protocol: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    name = protocol.get("name") or ""
+    symbol = protocol.get("symbol") or ""
+    queries = [name]
+    if symbol:
+        queries.append(symbol)
+
+    all_pairs: List[Dict[str, Any]] = []
+    for q in queries:
+        pairs = search_dex_pairs(q)
+        all_pairs.extend(pairs)
+
+    filtered_pairs = []
+    allowed_protocol_chains = {c.lower() for c in (protocol.get("chains") or [])}
+
+    for pair in all_pairs:
+        chain_id = (pair.get("chainId") or "").lower()
+        if chain_id not in ALLOWED_CHAINS:
+            continue
+        if allowed_protocol_chains and chain_id not in allowed_protocol_chains:
+            continue
+
+        liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"))
+        volume_24h = to_float((pair.get("volume") or {}).get("h24"))
+
+        if liquidity_usd < 100_000:
+            continue
+        if volume_24h < 50_000:
+            continue
+
+        filtered_pairs.append(pair)
+
+    if not filtered_pairs:
+        return None
+
+    return max(
+        filtered_pairs,
+        key=lambda p: (
+            to_float((p.get("liquidity") or {}).get("usd")),
+            to_float((p.get("volume") or {}).get("h24")),
+        ),
+    )
+
+
+def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str, Any]:
     liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"))
     volume_24h = to_float((pair.get("volume") or {}).get("h24"))
     fdv = to_float(pair.get("fdv"))
-    age_hours = get_age_hours(pair.get("pairCreatedAt"))
-
-    base_token = pair.get("baseToken") or {}
-    name = base_token.get("name") or ""
-    symbol = base_token.get("symbol") or ""
-
-    if chain_id not in ALLOWED_CHAINS:
-        return False
-
-    if contains_low_quality_keyword(name, symbol):
-        return False
-
-    if liquidity_usd < 150_000:
-        return False
-
-    if volume_24h < 80_000:
-        return False
-
-    if age_hours < 72:
-        return False
-
-    if liquidity_usd > 0 and fdv > 0 and (fdv / liquidity_usd) > 25:
-        return False
-
-    return True
-
-
-def match_llama_protocol(
-    token_name: str,
-    token_symbol: str,
-    chain_id: str,
-    protocols: List[Dict[str, Any]]
-) -> Optional[Dict[str, Any]]:
-    target_names = {
-        normalize_name(token_name),
-        normalize_name(token_symbol),
-        normalize_name(f"{token_name}{token_symbol}")
-    }
-
-    best_match = None
-    best_score = -1
-
-    for protocol in protocols:
-        pname = protocol.get("name") or ""
-        pslug = protocol.get("slug") or ""
-        pchains = [c.lower() for c in (protocol.get("chains") or [])]
-
-        norm_name = normalize_name(pname)
-        norm_slug = normalize_name(pslug)
-
-        score = 0
-
-        if chain_id in pchains:
-            score += 2
-
-        if norm_name in target_names or norm_slug in target_names:
-            score += 10
-
-        if any(t and t in norm_name for t in target_names):
-            score += 4
-
-        if any(t and t in norm_slug for t in target_names):
-            score += 3
-
-        if score > best_score:
-            best_score = score
-            best_match = protocol
-
-    if best_score < 5:
-        return None
-
-    return best_match
-
-
-def analyze_pair(
-    pair: Dict[str, Any],
-    boost_info: Dict[str, Any],
-    llama_protocol: Optional[Dict[str, Any]]
-) -> Dict[str, Any]:
-    base_token = pair.get("baseToken") or {}
-    quote_token = pair.get("quoteToken") or {}
-    liquidity = pair.get("liquidity") or {}
-    volume = pair.get("volume") or {}
-
-    name = base_token.get("name") or "-"
-    symbol = base_token.get("symbol") or "-"
-    chain_id = (pair.get("chainId") or boost_info.get("chainId") or "-").lower()
-    token_address = base_token.get("address") or boost_info.get("tokenAddress") or "-"
-    price_usd = to_float(pair.get("priceUsd"), None)
-    liquidity_usd = to_float(liquidity.get("usd"))
-    volume_24h = to_float(volume.get("h24"))
-    fdv = to_float(pair.get("fdv"))
     market_cap = to_float(pair.get("marketCap"))
-    age_hours = get_age_hours(pair.get("pairCreatedAt"))
+    price_usd = to_float(pair.get("priceUsd"), None)
+
+    tvl = to_float(protocol.get("tvl"))
+    category = protocol.get("category") or "-"
+    chain_id = (pair.get("chainId") or "").lower()
     dex_id = pair.get("dexId") or "-"
     pair_url = pair.get("url") or "-"
-    quote_symbol = quote_token.get("symbol") or "-"
-    boost_total = to_float(boost_info.get("totalAmount"))
 
     fdv_liquidity_ratio = (fdv / liquidity_usd) if liquidity_usd > 0 and fdv > 0 else 0.0
     volume_liquidity_ratio = (volume_24h / liquidity_usd) if liquidity_usd > 0 else 0.0
+    tvl_liquidity_ratio = (tvl / liquidity_usd) if liquidity_usd > 0 and tvl > 0 else 0.0
 
     score = 100
-    reasons: List[str] = []
+    reasons = []
 
-    # Dex 구조 분석
-    if liquidity_usd < 250_000:
+    if tvl >= 100_000_000:
+        reasons.append("TVL이 매우 큼")
+    elif tvl >= 20_000_000:
+        reasons.append("TVL이 양호")
+    else:
         score -= 12
-        reasons.append("유동성이 다소 낮음")
-    else:
+        reasons.append("TVL이 크지 않음")
+
+    if liquidity_usd >= 500_000:
         reasons.append("유동성이 양호")
-
-    if volume_24h < 150_000:
-        score -= 10
-        reasons.append("24h 거래량이 보통 이하")
+    elif liquidity_usd >= 200_000:
+        reasons.append("유동성이 무난")
     else:
-        reasons.append("거래량이 양호")
+        score -= 12
+        reasons.append("유동성이 낮음")
 
-    if fdv_liquidity_ratio > 15:
-        score -= 18
+    if volume_24h >= 500_000:
+        reasons.append("거래량이 강함")
+    elif volume_24h >= 150_000:
+        reasons.append("거래량이 무난")
+    else:
+        score -= 10
+        reasons.append("거래량이 낮음")
+
+    if fdv_liquidity_ratio > 20:
+        score -= 20
         reasons.append("FDV 대비 유동성 부담")
-    elif fdv_liquidity_ratio > 8:
-        score -= 8
+    elif fdv_liquidity_ratio > 10:
+        score -= 10
         reasons.append("FDV/유동성 구조 보통")
     else:
         reasons.append("FDV/유동성 구조 양호")
 
-    if volume_liquidity_ratio < 0.25:
-        score -= 10
-        reasons.append("거래 회전이 낮음")
-    elif volume_liquidity_ratio > 3.0:
-        score -= 6
+    if volume_liquidity_ratio < 0.2:
+        score -= 8
+        reasons.append("거래 회전이 약함")
+    elif volume_liquidity_ratio > 3:
+        score -= 4
         reasons.append("과열 거래 가능성")
     else:
         reasons.append("거래 회전이 무난")
 
-    if age_hours < 168:
-        score -= 12
-        reasons.append("상대적으로 신생")
+    if tvl_liquidity_ratio < 5:
+        score -= 8
+        reasons.append("TVL 대비 시장 반응 약함")
     else:
-        reasons.append("최소 생존 기간 통과")
+        reasons.append("TVL 대비 시장 반응 무난")
 
-    if boost_total > 0:
-        score -= 4
-        reasons.append("Boost 노출 기반")
+    if category in {"Dexes", "Lending", "Derivatives", "Bridge"}:
+        score += 3
+        reasons.append("주요 DeFi 카테고리")
 
-    # DefiLlama 분석
-    llama_name = "-"
-    llama_tvl = None
-    llama_category = "-"
-    llama_chain_count = 0
-
-    if llama_protocol:
-        llama_name = llama_protocol.get("name") or "-"
-        llama_tvl = to_float(llama_protocol.get("tvl"), None)
-        llama_category = llama_protocol.get("category") or "-"
-        llama_chain_count = len(llama_protocol.get("chains") or [])
-
-        if llama_tvl is None or llama_tvl <= 0:
-            score -= 18
-            reasons.append("TVL 확인 어려움")
-        elif llama_tvl < 5_000_000:
-            score -= 10
-            reasons.append("TVL이 작음")
-        elif llama_tvl < 20_000_000:
-            score -= 4
-            reasons.append("TVL이 보통")
-        else:
-            reasons.append("TVL이 양호")
-
-        # TVL 대비 DEX 측 유동성 비교
-        if llama_tvl and liquidity_usd > 0:
-            tvl_liq_ratio = llama_tvl / liquidity_usd
-            if tvl_liq_ratio > 100:
-                reasons.append("TVL 규모가 큼")
-            elif tvl_liq_ratio < 5:
-                score -= 5
-                reasons.append("TVL 대비 시장 반응 약함")
-
-        # 카테고리 가점
-        if llama_category.lower() in {"dexes", "lending", "yield", "derivatives", "bridge"}:
-            score += 3
-            reasons.append("주요 DeFi 카테고리")
-    else:
-        score -= 20
-        reasons.append("DefiLlama 매칭 실패")
-
-    if score >= 82:
+    if score >= 85:
         grade = "관심"
-        verdict = "진짜 디파이 후보로 추가 검토 가치 있음"
-    elif score >= 65:
+        verdict = "진짜 디파이 후보로 우선 검토"
+    elif score >= 70:
         grade = "관찰"
-        verdict = "시장 구조는 무난하나 추가 검증 필요"
+        verdict = "추가 확인할 가치 있음"
     else:
         grade = "위험"
-        verdict = "광고성/초기 과열 또는 실체 부족 가능성"
+        verdict = "시장 구조 또는 밸류 부담 존재"
 
     return {
-        "name": name,
-        "symbol": symbol,
-        "chain_id": chain_id,
-        "token_address": token_address,
+        "name": protocol.get("name") or "-",
+        "symbol": protocol.get("symbol") or "-",
+        "chain": chain_id,
+        "category": category,
+        "tvl": tvl,
         "price_usd": price_usd,
         "liquidity_usd": liquidity_usd,
         "volume_24h": volume_24h,
         "fdv": fdv,
         "market_cap": market_cap,
-        "age_hours": age_hours,
-        "dex_id": dex_id,
-        "pair_url": pair_url,
-        "quote_symbol": quote_symbol,
         "fdv_liquidity_ratio": fdv_liquidity_ratio,
         "volume_liquidity_ratio": volume_liquidity_ratio,
+        "tvl_liquidity_ratio": tvl_liquidity_ratio,
+        "dex_id": dex_id,
+        "pair_url": pair_url,
         "score": max(score, 0),
         "grade": grade,
         "verdict": verdict,
         "reasons": reasons[:6],
-        "llama_name": llama_name,
-        "llama_tvl": llama_tvl,
-        "llama_category": llama_category,
-        "llama_chain_count": llama_chain_count,
     }
 
 
-def build_message() -> str:
-    boosted_tokens = get_top_boosted_tokens(limit=20)
-    protocols = get_llama_protocols()
-    analyzed_projects: List[Dict[str, Any]] = []
+def build_chain_leaders(projects: List[Dict[str, Any]]) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    leaders: Dict[str, Dict[str, Dict[str, Any]]] = {}
 
-    for token in boosted_tokens:
-        chain_id = token.get("chainId")
-        token_address = token.get("tokenAddress")
+    for p in projects:
+        chain = p["chain"]
+        if chain not in leaders:
+            leaders[chain] = {}
 
-        if not chain_id or not token_address:
-            continue
+        if "liquidity" not in leaders[chain] or p["liquidity_usd"] > leaders[chain]["liquidity"]["liquidity_usd"]:
+            leaders[chain]["liquidity"] = p
 
-        pairs = get_token_pairs(chain_id, token_address)
-        best_pair = choose_best_pair(pairs)
+        if "volume" not in leaders[chain] or p["volume_24h"] > leaders[chain]["volume"]["volume_24h"]:
+            leaders[chain]["volume"] = p
 
-        if not best_pair:
-            continue
+    return leaders
 
-        if not basic_filter(best_pair):
-            continue
 
-        base_token = best_pair.get("baseToken") or {}
-        token_name = base_token.get("name") or ""
-        token_symbol = base_token.get("symbol") or ""
-        chain = (best_pair.get("chainId") or "").lower()
+def compare_leaders(
+    prev_state: Dict[str, Any],
+    current_leaders: Dict[str, Dict[str, Dict[str, Any]]]
+) -> List[str]:
+    messages = []
+    prev_leaders = prev_state.get("chain_leaders", {})
 
-        llama_protocol = match_llama_protocol(
-            token_name=token_name,
-            token_symbol=token_symbol,
-            chain_id=chain,
-            protocols=protocols,
-        )
+    for chain, data in current_leaders.items():
+        prev_chain = prev_leaders.get(chain, {})
 
-        analyzed = analyze_pair(best_pair, token, llama_protocol)
-        analyzed_projects.append(analyzed)
+        current_liq_name = data.get("liquidity", {}).get("name", "-")
+        prev_liq_name = prev_chain.get("liquidity", {}).get("name", "-")
+        liq_status = "유지" if current_liq_name == prev_liq_name else f"변경 ({prev_liq_name} → {current_liq_name})"
 
-    analyzed_projects.sort(key=lambda x: x["score"], reverse=True)
-    final_projects = analyzed_projects[:3]
+        current_vol_name = data.get("volume", {}).get("name", "-")
+        prev_vol_name = prev_chain.get("volume", {}).get("name", "-")
+        vol_status = "유지" if current_vol_name == prev_vol_name else f"변경 ({prev_vol_name} → {current_vol_name})"
 
-    if not final_projects:
-        return (
-            "[오늘의 진짜 디파이 투자 분석 결과]\n\n"
-            "조건을 통과한 프로젝트가 없습니다.\n"
-            "- 유동성 부족\n"
-            "- 거래량 부족\n"
-            "- 너무 신생\n"
-            "- FDV 과열\n"
-            "- DefiLlama 실체 매칭 실패\n"
-            "중 하나로 제외되었을 가능성이 큽니다."
-        )
+        messages.append(f"- {chain} 유동성 1위: {liq_status}")
+        messages.append(f"- {chain} 거래량 1위: {vol_status}")
 
-    lines: List[str] = []
+    return messages
+
+
+def build_message(projects: List[Dict[str, Any]], leaders: Dict[str, Dict[str, Dict[str, Any]]], changes: List[str]) -> str:
+    top_projects = sorted(projects, key=lambda x: x["score"], reverse=True)[:3]
+
+    lines = []
     lines.append("[오늘의 진짜 디파이 투자 분석 결과]")
     lines.append("")
 
-    for idx, item in enumerate(final_projects, start=1):
-        lines.append(f"{idx}) {item['name']} ({item['symbol']})")
-        lines.append(f"- 판정: {item['grade']} / 점수: {item['score']}")
-        lines.append(f"- 결론: {item['verdict']}")
-        lines.append(f"- 체인: {item['chain_id']}")
-        lines.append(f"- 가격: {fmt_num(item['price_usd'])} USD")
-        lines.append(f"- 유동성: {fmt_num(item['liquidity_usd'])}")
-        lines.append(f"- 24h 거래량: {fmt_num(item['volume_24h'])}")
-        lines.append(f"- FDV: {fmt_num(item['fdv'])}")
-        lines.append(f"- 시총: {fmt_num(item['market_cap'])}")
-        lines.append(f"- FDV/유동성: {item['fdv_liquidity_ratio']:.2f}")
-        lines.append(f"- 거래량/유동성: {item['volume_liquidity_ratio']:.2f}")
-        lines.append(f"- 생성 후 경과: {item['age_hours']:.1f}시간")
-        lines.append(f"- DEX: {item['dex_id']} / 상대토큰: {item['quote_symbol']}")
-        lines.append(f"- DefiLlama: {item['llama_name']} / TVL: {fmt_num(item['llama_tvl'])}")
-        lines.append(f"- 카테고리: {item['llama_category']} / 멀티체인 수: {item['llama_chain_count']}")
-        lines.append(f"- 핵심 이유: {', '.join(item['reasons'])}")
-        lines.append(f"- 페어 링크: {item['pair_url']}")
+    if not top_projects:
+        lines.append("조건을 통과한 프로젝트가 없습니다.")
+        return "\n".join(lines)
+
+    for idx, p in enumerate(top_projects, start=1):
+        lines.append(f"{idx}) {p['name']} ({p['symbol']})")
+        lines.append(f"- 판정: {p['grade']} / 점수: {p['score']}")
+        lines.append(f"- 결론: {p['verdict']}")
+        lines.append(f"- 체인: {p['chain']} / 카테고리: {p['category']}")
+        lines.append(f"- TVL: {fmt_num(p['tvl'])}")
+        lines.append(f"- 가격: {fmt_num(p['price_usd'])} USD")
+        lines.append(f"- 유동성: {fmt_num(p['liquidity_usd'])}")
+        lines.append(f"- 24h 거래량: {fmt_num(p['volume_24h'])}")
+        lines.append(f"- FDV: {fmt_num(p['fdv'])}")
+        lines.append(f"- 시총: {fmt_num(p['market_cap'])}")
+        lines.append(f"- FDV/유동성: {p['fdv_liquidity_ratio']:.2f}")
+        lines.append(f"- 거래량/유동성: {p['volume_liquidity_ratio']:.2f}")
+        lines.append(f"- TVL/유동성: {p['tvl_liquidity_ratio']:.2f}")
+        lines.append(f"- DEX: {p['dex_id']}")
+        lines.append(f"- 핵심 이유: {', '.join(p['reasons'])}")
+        lines.append(f"- 링크: {p['pair_url']}")
         lines.append("")
 
-    lines.append("주의: 이 버전은 Dexscreener + DefiLlama 기반 분석입니다.")
-    lines.append("Revenue / Fees / Holder / LP Lock / 팀 검증은 다음 단계에서 더 붙일 수 있습니다.")
+    lines.append("[체인별 유동성 1위]")
+    for chain, data in leaders.items():
+        if "liquidity" in data:
+            p = data["liquidity"]
+            lines.append(f"- {chain}: {p['name']} / 유동성 {fmt_num(p['liquidity_usd'])}")
+
+    lines.append("")
+    lines.append("[체인별 거래량 1위]")
+    for chain, data in leaders.items():
+        if "volume" in data:
+            p = data["volume"]
+            lines.append(f"- {chain}: {p['name']} / 24h 거래량 {fmt_num(p['volume_24h'])}")
+
+    lines.append("")
+    lines.append("[전 실행 대비 변화]")
+    if changes:
+        lines.extend(changes)
+    else:
+        lines.append("- 비교 가능한 이전 데이터가 없습니다.")
+
     return "\n".join(lines)
 
 
 def main() -> None:
-    message = build_message()
+    prev_state = load_state()
+    protocols = filter_llama_protocols(get_llama_protocols())
+
+    projects = []
+    for protocol in protocols[:40]:
+        best_pair = choose_best_pair_for_protocol(protocol)
+        if not best_pair:
+            continue
+        projects.append(analyze_project(protocol, best_pair))
+
+    leaders = build_chain_leaders(projects)
+    changes = compare_leaders(prev_state, leaders)
+
+    message = build_message(projects, leaders, changes)
     send_telegram_message(message)
+
+    new_state = {
+        "chain_leaders": {
+            chain: {
+                k: {
+                    "name": v["name"],
+                    "liquidity_usd": v["liquidity_usd"],
+                    "volume_24h": v["volume_24h"],
+                }
+                for k, v in data.items()
+            }
+            for chain, data in leaders.items()
+        },
+        "top_projects": [
+            {
+                "name": p["name"],
+                "score": p["score"],
+                "chain": p["chain"],
+            }
+            for p in sorted(projects, key=lambda x: x["score"], reverse=True)[:3]
+        ],
+    }
+    save_state(new_state)
 
 
 if __name__ == "__main__":
