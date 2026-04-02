@@ -250,6 +250,37 @@ def get_fee_revenue_metrics(protocol: Dict[str, Any]) -> Dict[str, Optional[floa
     }
 
 
+def passes_profitability_filter(protocol: Dict[str, Any], pair: Dict[str, Any]) -> bool:
+    liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
+    fdv = to_float(pair.get("fdv"), 0.0) or 0.0
+
+    metrics = get_fee_revenue_metrics(protocol)
+    fees_30d = metrics["fees_30d"]
+    revenue_30d = metrics["revenue_30d"]
+
+    fdv_liquidity_ratio = (fdv / liquidity_usd) if liquidity_usd > 0 and fdv > 0 else 0.0
+
+    if liquidity_usd < 150_000:
+        return False
+
+    if fdv_liquidity_ratio > 30:
+        return False
+
+    if fees_30d is None:
+        return False
+
+    if revenue_30d is None:
+        return False
+
+    if fees_30d < 100_000:
+        return False
+
+    if revenue_30d < 20_000:
+        return False
+
+    return True
+
+
 def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str, Any]:
     liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
     volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
@@ -308,7 +339,10 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         reasons.append("거래량이 낮음")
 
     # FDV vs Liquidity
-    if fdv_liquidity_ratio > 20:
+    if fdv_liquidity_ratio > 30:
+        score -= 30
+        reasons.append("FDV 대비 유동성 과열")
+    elif fdv_liquidity_ratio > 20:
         score -= 20
         reasons.append("FDV 대비 유동성 부담")
     elif fdv_liquidity_ratio > 10:
@@ -336,31 +370,35 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
 
     # Fees
     if fees_30d is None:
-        score -= 10
-        reasons.append("Fees 데이터 부족")
+        score -= 20
+        reasons.append("Fees 없음 → 구조 의심")
     elif fees_30d >= 5_000_000:
         score += 8
         reasons.append("Fees 30d가 강함")
     elif fees_30d >= 500_000:
         score += 3
         reasons.append("Fees 30d가 무난")
+    elif fees_30d >= 100_000:
+        reasons.append("Fees 30d가 약하지만 존재")
     else:
-        score -= 6
-        reasons.append("Fees 30d가 약함")
+        score -= 12
+        reasons.append("Fees 30d가 매우 약함")
 
     # Revenue
     if revenue_30d is None:
-        score -= 12
-        reasons.append("Revenue 데이터 부족")
+        score -= 22
+        reasons.append("Revenue 없음 → 자동 경고")
     elif revenue_30d >= 1_000_000:
         score += 10
         reasons.append("Revenue 30d가 강함")
     elif revenue_30d >= 100_000:
         score += 4
         reasons.append("Revenue 30d가 무난")
+    elif revenue_30d >= 20_000:
+        reasons.append("Revenue 30d가 낮지만 존재")
     else:
-        score -= 8
-        reasons.append("Revenue 30d가 약함")
+        score -= 14
+        reasons.append("Revenue 30d가 매우 약함")
 
     # Fee/TVL
     if fee_tvl_ratio_30d is not None:
@@ -542,7 +580,7 @@ def build_message(
     lines.append("")
 
     if not top_projects:
-        lines.append("조건을 통과한 프로젝트가 없습니다.")
+        lines.append("수익성 필터를 통과한 프로젝트가 없습니다.")
     else:
         for idx, p in enumerate(top_projects, start=1):
             lines.append(f"{idx}) {p['name']} ({p['symbol']})")
@@ -574,7 +612,7 @@ def build_message(
             p = data["liquidity"]
             lines.append(f"- {chain}: {p['name']} / 유동성 {fmt_num(p['liquidity_usd'])}")
         else:
-            lines.append(f"- {chain}: 조건 통과 프로젝트 없음")
+            lines.append(f"- {chain}: 수익성 필터 통과 프로젝트 없음")
 
     lines.append("")
     lines.append("[체인별 거래량 1위]")
@@ -584,7 +622,7 @@ def build_message(
             p = data["volume"]
             lines.append(f"- {chain}: {p['name']} / 24h 거래량 {fmt_num(p['volume_24h'])}")
         else:
-            lines.append(f"- {chain}: 조건 통과 프로젝트 없음")
+            lines.append(f"- {chain}: 수익성 필터 통과 프로젝트 없음")
 
     bsc_top3 = build_chain_top3_from_search("bsc", BSC_SEARCH_TERMS)
     polygon_top3 = build_chain_top3_from_search("polygon", POLYGON_SEARCH_TERMS)
@@ -640,6 +678,10 @@ def main() -> None:
         best_pair = choose_best_pair_for_protocol(protocol)
         if not best_pair:
             continue
+
+        if not passes_profitability_filter(protocol, best_pair):
+            continue
+
         projects.append(analyze_project(protocol, best_pair))
 
     leaders = build_chain_leaders(projects)
