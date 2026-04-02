@@ -27,7 +27,6 @@ ALLOWED_CHAINS = {
 
 CHAIN_TO_GECKO = {
     "polygon": "polygon_pos",
-    "bsc": "bsc",
 }
 
 ALLOWED_CATEGORIES = {
@@ -51,7 +50,8 @@ BAD_KEYWORDS = [
 ]
 
 BSC_SEARCH_TERMS = [
-    "PancakeSwap", "Venus", "THENA", "Lista", "Biswap", "Wombat", "Helio", "Aster"
+    "usdt", "wbnb", "cake", "floki", "btcb", "eth", "fdusd", "usdc",
+    "thena", "venus", "lista", "biswap", "wombat", "aster", "slisbnb"
 ]
 
 POLYGON_SEARCH_TERMS = [
@@ -65,6 +65,7 @@ REAL_EARNER_MAX_FDV_LIQ_RATIO = 30
 
 GECKO_PAGES = 10
 GECKO_MIN_LIQUIDITY = 50_000
+DEX_BSC_MIN_LIQUIDITY = 50_000
 
 
 def send_telegram_message(text: str) -> None:
@@ -799,14 +800,100 @@ def build_chain_top3_gecko(chain_key: str, prev_state: Dict[str, Any]) -> Dict[s
 
     token_records = []
     for token in merged_tokens:
-        if chain_key == "bsc":
-            if is_bad_name(token["name"]):
-                continue
-        else:
-            if not is_valid_token(token["name"]):
-                continue
+        if not is_valid_token(token["name"]):
+            continue
 
         signal_text, meta = compute_flow_signal(chain_key, token, prev_state)
+        token_records.append({**token, "signal": signal_text, **meta})
+
+    return {
+        "liquidity": top_liquidity_pools,
+        "volume": top_volume_pools,
+        "all": token_records,
+    }
+
+
+def dex_pair_to_record(pair: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    chain_id = (pair.get("chainId") or "").lower()
+    if chain_id != "bsc":
+        return None
+
+    liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
+    volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
+
+    if liquidity_usd < DEX_BSC_MIN_LIQUIDITY:
+        return None
+
+    base = pair.get("baseToken") or {}
+    quote = pair.get("quoteToken") or {}
+    dex_id = pair.get("dexId") or "-"
+    pair_address = pair.get("pairAddress") or ""
+    url = pair.get("url") or ""
+
+    base_symbol = (base.get("symbol") or base.get("name") or "").strip()
+    quote_symbol = (quote.get("symbol") or quote.get("name") or "").strip()
+
+    if not base_symbol and not quote_symbol:
+        return None
+
+    pool_name = f"{base_symbol} / {quote_symbol}".strip(" /")
+    token_name = extract_primary_token_from_pool_name(pool_name)
+
+    return {
+        "name": token_name,
+        "pool_name": pool_name,
+        "pool_address": pair_address,
+        "liquidity_usd": liquidity_usd,
+        "volume_24h": volume_24h,
+        "dex_id": dex_id,
+        "url": url,
+    }
+
+
+def build_bsc_top3_dex(prev_state: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
+    all_pairs: List[Dict[str, Any]] = []
+    seen_addresses = set()
+
+    for term in BSC_SEARCH_TERMS:
+        try:
+            pairs = search_dex_pairs(term)
+        except Exception:
+            continue
+
+        for pair in pairs:
+            record = dex_pair_to_record(pair)
+            if not record:
+                continue
+
+            key = record["pool_address"] or f"{record['pool_name']}::{record.get('dex_id', '-')}"
+            if key in seen_addresses:
+                continue
+            seen_addresses.add(key)
+
+            if is_bad_name(record["pool_name"]):
+                continue
+
+            all_pairs.append(record)
+
+    top_liquidity_pools = sorted(
+        all_pairs,
+        key=lambda x: x["liquidity_usd"],
+        reverse=True,
+    )[:3]
+
+    top_volume_pools = sorted(
+        all_pairs,
+        key=lambda x: x["volume_24h"],
+        reverse=True,
+    )[:3]
+
+    merged_tokens = merge_gecko_records_by_token(all_pairs)
+
+    token_records = []
+    for token in merged_tokens:
+        if is_bad_name(token["name"]):
+            continue
+        signal_text, meta = compute_flow_signal("bsc", token, prev_state)
         token_records.append({**token, "signal": signal_text, **meta})
 
     return {
@@ -928,12 +1015,12 @@ def build_message(
     )[:3]
 
     polygon_top3 = build_chain_top3_gecko("polygon", prev_state)
-    bsc_top3 = build_chain_top3_gecko("bsc", prev_state)
+    bsc_top3 = build_bsc_top3_dex(prev_state)
     dex_pairs = collect_dex_pairs_for_unified_ranking()
     unified_top = build_unified_top(polygon_top3, bsc_top3, dex_pairs, prev_state)
 
     lines = []
-    lines.append("🚀 DeFi 실전 투자 봇 v7.2")
+    lines.append("🚀 DeFi 실전 투자 봇 v7.3")
     lines.append("")
 
     lines.append("[메인 분석 TOP 3]")
@@ -989,18 +1076,22 @@ def build_message(
         )
     lines.append("")
 
-    lines.append("[BSC 유동성 TOP 3 - GeckoTerminal 풀 기준]")
+    lines.append("[BSC 유동성 TOP 3 - DexScreener 풀 기준]")
     for idx, item in enumerate(bsc_top3["liquidity"], start=1):
         lines.append(
             f"{idx}) {item['pool_name']} / 유동성 {fmt_num(item['liquidity_usd'])} / 거래량 {fmt_num(item['volume_24h'])}"
         )
+    if not bsc_top3["liquidity"]:
+        lines.append("- 데이터 없음")
     lines.append("")
 
-    lines.append("[BSC 거래량 TOP 3 - GeckoTerminal 풀 기준]")
+    lines.append("[BSC 거래량 TOP 3 - DexScreener 풀 기준]")
     for idx, item in enumerate(bsc_top3["volume"], start=1):
         lines.append(
             f"{idx}) {item['pool_name']} / 거래량 {fmt_num(item['volume_24h'])} / 유동성 {fmt_num(item['liquidity_usd'])}"
         )
+    if not bsc_top3["volume"]:
+        lines.append("- 데이터 없음")
     lines.append("")
 
     lines.append("[체인별 유동성 1위]")
