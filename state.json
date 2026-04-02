@@ -2,224 +2,626 @@
   "chain_leaders": {
     "ethereum": {
       "liquidity": {
-        "name": "SolvBTC",
-        "liquidity_usd": 6614071.5,
-        "volume_24h": 354336.5
+        "name": "Frax USD",
+        "symbol": "FRAX",
+        "chain": "ethereum",
+        "category": "RWA",
+        "tvl": 71048592.57585602,
+        "price_usd": 0.9998,
+        "liquidity_usd": 15293605.76,
+        "volume_24h": 1837470.78,
+        "fdv": 118684850.0,
+        "market_cap": 121887752.0,
+        "fdv_liquidity_ratio": 7.7604230070070805,
+        "volume_liquidity_ratio": 0.1201463414733662,
+        "tvl_liquidity_ratio": 4.645640386630184,
+        "fees_24h": null,
+        "fees_7d": null,
+        "fees_30d": null,
+        "revenue_24h": null,
+        "revenue_7d": null,
+        "revenue_30d": null,
+        "fee_tvl_ratio_30d": null,
+        "revenue_tvl_ratio_30d": null,
+        "dex_id": "curve",
+        "pair_url": "https://dexscreener.com/ethereum/0x13e12bb0e6a2f1a3d6901a59a9d585e89a6243e1",
+        "score": 51,
+        "grade": "위험",
+        "verdict": "시장 구조/수익성/보안 중 하나 이상 부담",
+        "reasons": [
+          "TVL이 양호",
+          "유동성이 양호",
+          "거래량이 강함",
+          "FDV/유동성 구조 양호",
+          "거래 회전이 약함",
+          "TVL 대비 시장 반응 약함",
+          "Fees 데이터 부족",
+          "Revenue 데이터 부족"
+        ],
+        "security": {
+          "token_address": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+          "is_honeypot": false,
+          "buy_tax": 0.0,
+          "sell_tax": 0.0,
+          "transfer_tax": 0.0,
+          "can_buy": true,
+          "can_sell": true,
+          "top1_pct": null,
+          "top5_pct": null,
+          "risk_flags": []
+        }
       },
       "volume": {
-        "name": "Euler V2",
-        "liquidity_usd": 732179.3,
-        "volume_24h": 705066.97
+        "name": "Inverse Finance FiRM",
+        "symbol": "INV",
+        "chain": "ethereum",
+        "category": "CDP",
+        "tvl": 22277413.844821904,
+        "price_usd": 1.15,
+        "liquidity_usd": 2114761.13,
+        "volume_24h": 2292834.54,
+        "fdv": 73076521.0,
+        "market_cap": 73076521.0,
+        "fdv_liquidity_ratio": 34.555449295590186,
+        "volume_liquidity_ratio": 1.0842049759066643,
+        "tvl_liquidity_ratio": 10.534245938604851,
+        "fees_24h": null,
+        "fees_7d": null,
+        "fees_30d": null,
+        "revenue_24h": null,
+        "revenue_7d": null,
+        "revenue_30d": null,
+        "fee_tvl_ratio_30d": null,
+        "revenue_tvl_ratio_30d": null,
+        "dex_id": "uniswap",
+        "pair_url": "https://dexscreener.com/ethereum/0x6d074d42d50399581cc3d303b8024000a7897290",
+        "score": 37,
+        "grade": "위험",
+        "verdict": "시장 구조/수익성/보안 중 하나 이상 부담",
+        "reasons": [
+          "TVL이 양호",
+          "유동성이 양호",
+          "거래량이 강함",
+          "FDV 대비 유동성 과열",
+          "거래 회전이 무난",
+          "TVL 대비 시장 반응 무난",
+          "Fees 데이터 부족",
+          "Revenue 데이터 부족"
+        ],
+        "security": {
+          "token_address": "0x5F7827FDeb7c20b443265Fc2F40845B715385Ff2",
+          "is_honeypot": false,
+          "buy_tax": 0.0,
+          "sell_tax": 0.0,
+          "transfer_tax": 0.0,
+          "can_buy": true,
+          "can_sell": true,
+          "top1_pct": null,
+          "top5_pct": null,
+          "risk_flags": []
+        }
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 777453.28,
-        "volume_24h": 91295.69
+        "symbol": "PENDLE",
+        "chain": "arbitrum",
+        "category": "Yield",
+        "tvl": 2007388455.5502572,
+        "price_usd": 1.086,
+        "liquidity_usd": 779241.46,
+        "volume_24h": 90748.03,
+        "fdv": 30113497.0,
+        "market_cap": 180806272.0,
+        "fdv_liquidity_ratio": 38.64462884200233,
+        "volume_liquidity_ratio": 0.11645688102889187,
+        "tvl_liquidity_ratio": 2576.080147930344,
+        "fees_24h": null,
+        "fees_7d": null,
+        "fees_30d": null,
+        "revenue_24h": null,
+        "revenue_7d": null,
+        "revenue_30d": null,
+        "fee_tvl_ratio_30d": null,
+        "revenue_tvl_ratio_30d": null,
+        "dex_id": "uniswap",
+        "pair_url": "https://dexscreener.com/arbitrum/0xdbaeb7f0dfe3a0aafd798ccecb5b22e708f7852c",
+        "score": 0,
+        "grade": "위험",
+        "verdict": "시장 구조/수익성/보안 중 하나 이상 부담",
+        "reasons": [
+          "TVL이 매우 큼",
+          "유동성이 양호",
+          "거래량이 낮음",
+          "FDV 대비 유동성 과열",
+          "거래 회전이 약함",
+          "TVL 대비 시장 반응 무난",
+          "Fees 데이터 부족",
+          "Revenue 데이터 부족"
+        ],
+        "security": {
+          "token_address": "0x0c880f6761F1af8d9Aa9C466984b80DAb9a8c9e8",
+          "is_honeypot": null,
+          "buy_tax": null,
+          "sell_tax": null,
+          "transfer_tax": null,
+          "can_buy": false,
+          "can_sell": false,
+          "top1_pct": null,
+          "top5_pct": null,
+          "risk_flags": [
+            "매도 불가 의심"
+          ]
+        }
       },
       "volume": {
-        "name": "Pendle",
-        "liquidity_usd": 777453.28,
-        "volume_24h": 91295.69
+        "name": "Axelar",
+        "symbol": "AXL",
+        "chain": "arbitrum",
+        "category": "Bridge",
+        "tvl": 138963959.60078436,
+        "price_usd": 0.03462,
+        "liquidity_usd": 185997.87,
+        "volume_24h": 224075.49,
+        "fdv": 6444351.0,
+        "market_cap": 16846856.0,
+        "fdv_liquidity_ratio": 34.64744515622679,
+        "volume_liquidity_ratio": 1.2047207314793444,
+        "tvl_liquidity_ratio": 747.1266181746295,
+        "fees_24h": null,
+        "fees_7d": null,
+        "fees_30d": null,
+        "revenue_24h": null,
+        "revenue_7d": null,
+        "revenue_30d": null,
+        "fee_tvl_ratio_30d": null,
+        "revenue_tvl_ratio_30d": null,
+        "dex_id": "pancakeswap",
+        "pair_url": "https://dexscreener.com/arbitrum/0xcfe0acf3b242aef2697ba94f11a31f61f2349bcb",
+        "score": 0,
+        "grade": "위험",
+        "verdict": "시장 구조/수익성/보안 중 하나 이상 부담",
+        "reasons": [
+          "TVL이 매우 큼",
+          "유동성이 낮음",
+          "거래량이 무난",
+          "FDV 대비 유동성 과열",
+          "거래 회전이 무난",
+          "TVL 대비 시장 반응 무난",
+          "Fees 데이터 부족",
+          "Revenue 데이터 부족"
+        ],
+        "security": {
+          "token_address": "0x11e969e9B3f89cB16D686a03Cd8508C9fC0361AF",
+          "is_honeypot": null,
+          "buy_tax": null,
+          "sell_tax": null,
+          "transfer_tax": null,
+          "can_buy": false,
+          "can_sell": false,
+          "top1_pct": null,
+          "top5_pct": null,
+          "risk_flags": [
+            "매도 불가 의심"
+          ]
+        }
       }
     },
-    "base": {},
+    "base": {
+      "liquidity": {
+        "name": "40 Acres",
+        "symbol": "-",
+        "chain": "base",
+        "category": "Lending",
+        "tvl": 22332633.892607924,
+        "price_usd": 0.1598,
+        "liquidity_usd": 5589892.7,
+        "volume_24h": 1023614.54,
+        "fdv": 159833054.0,
+        "market_cap": 81983888.0,
+        "fdv_liquidity_ratio": 28.593223980846716,
+        "volume_liquidity_ratio": 0.18311881728964136,
+        "tvl_liquidity_ratio": 3.9951811405267086,
+        "fees_24h": null,
+        "fees_7d": null,
+        "fees_30d": null,
+        "revenue_24h": null,
+        "revenue_7d": null,
+        "revenue_30d": null,
+        "fee_tvl_ratio_30d": null,
+        "revenue_tvl_ratio_30d": null,
+        "dex_id": "aerodrome",
+        "pair_url": "https://dexscreener.com/base/0xd9edc75a3a797ec92ca370f19051babebfb2edee",
+        "score": 34,
+        "grade": "위험",
+        "verdict": "시장 구조/수익성/보안 중 하나 이상 부담",
+        "reasons": [
+          "TVL이 양호",
+          "유동성이 양호",
+          "거래량이 강함",
+          "FDV 대비 유동성 부담",
+          "거래 회전이 약함",
+          "TVL 대비 시장 반응 약함",
+          "Fees 데이터 부족",
+          "Revenue 데이터 부족"
+        ],
+        "security": {
+          "token_address": "0xc0634090F2Fe6c6d75e61Be2b949464aBB498973",
+          "is_honeypot": false,
+          "buy_tax": 0.0,
+          "sell_tax": 0.0,
+          "transfer_tax": 0.0,
+          "can_buy": true,
+          "can_sell": true,
+          "top1_pct": null,
+          "top5_pct": null,
+          "risk_flags": []
+        }
+      },
+      "volume": {
+        "name": "40 Acres",
+        "symbol": "-",
+        "chain": "base",
+        "category": "Lending",
+        "tvl": 22332633.892607924,
+        "price_usd": 0.1598,
+        "liquidity_usd": 5589892.7,
+        "volume_24h": 1023614.54,
+        "fdv": 159833054.0,
+        "market_cap": 81983888.0,
+        "fdv_liquidity_ratio": 28.593223980846716,
+        "volume_liquidity_ratio": 0.18311881728964136,
+        "tvl_liquidity_ratio": 3.9951811405267086,
+        "fees_24h": null,
+        "fees_7d": null,
+        "fees_30d": null,
+        "revenue_24h": null,
+        "revenue_7d": null,
+        "revenue_30d": null,
+        "fee_tvl_ratio_30d": null,
+        "revenue_tvl_ratio_30d": null,
+        "dex_id": "aerodrome",
+        "pair_url": "https://dexscreener.com/base/0xd9edc75a3a797ec92ca370f19051babebfb2edee",
+        "score": 34,
+        "grade": "위험",
+        "verdict": "시장 구조/수익성/보안 중 하나 이상 부담",
+        "reasons": [
+          "TVL이 양호",
+          "유동성이 양호",
+          "거래량이 강함",
+          "FDV 대비 유동성 부담",
+          "거래 회전이 약함",
+          "TVL 대비 시장 반응 약함",
+          "Fees 데이터 부족",
+          "Revenue 데이터 부족"
+        ],
+        "security": {
+          "token_address": "0xc0634090F2Fe6c6d75e61Be2b949464aBB498973",
+          "is_honeypot": false,
+          "buy_tax": 0.0,
+          "sell_tax": 0.0,
+          "transfer_tax": 0.0,
+          "can_buy": true,
+          "can_sell": true,
+          "top1_pct": null,
+          "top5_pct": null,
+          "risk_flags": []
+        }
+      }
+    },
     "bsc": {},
-    "polygon": {}
+    "polygon": {
+      "liquidity": {
+        "name": "Overnight Finance",
+        "symbol": "OVN",
+        "chain": "polygon",
+        "category": "CDP",
+        "tvl": 17714429.27514034,
+        "price_usd": 1.94,
+        "liquidity_usd": 2091192.11,
+        "volume_24h": 166105.95,
+        "fdv": 11424032.0,
+        "market_cap": 11424032.0,
+        "fdv_liquidity_ratio": 5.462928032948632,
+        "volume_liquidity_ratio": 0.07943122451815295,
+        "tvl_liquidity_ratio": 8.47097174402611,
+        "fees_24h": null,
+        "fees_7d": null,
+        "fees_30d": null,
+        "revenue_24h": null,
+        "revenue_7d": null,
+        "revenue_30d": null,
+        "fee_tvl_ratio_30d": null,
+        "revenue_tvl_ratio_30d": null,
+        "dex_id": "uniswap",
+        "pair_url": "https://dexscreener.com/polygon/0x124fcfd1b923485c8ccf275afbee4bf557b232d6",
+        "score": 12,
+        "grade": "위험",
+        "verdict": "시장 구조/수익성/보안 중 하나 이상 부담",
+        "reasons": [
+          "TVL이 크지 않음",
+          "유동성이 양호",
+          "거래량이 무난",
+          "FDV/유동성 구조 양호",
+          "거래 회전이 약함",
+          "TVL 대비 시장 반응 무난",
+          "Fees 데이터 부족",
+          "Revenue 데이터 부족"
+        ],
+        "security": {
+          "token_address": "0x2c72D25530191EBD244Eb6325E1892480b0e6E28",
+          "is_honeypot": null,
+          "buy_tax": null,
+          "sell_tax": null,
+          "transfer_tax": null,
+          "can_buy": false,
+          "can_sell": false,
+          "top1_pct": null,
+          "top5_pct": null,
+          "risk_flags": [
+            "매도 불가 의심"
+          ]
+        }
+      },
+      "volume": {
+        "name": "Overnight Finance",
+        "symbol": "OVN",
+        "chain": "polygon",
+        "category": "CDP",
+        "tvl": 17714429.27514034,
+        "price_usd": 1.94,
+        "liquidity_usd": 2091192.11,
+        "volume_24h": 166105.95,
+        "fdv": 11424032.0,
+        "market_cap": 11424032.0,
+        "fdv_liquidity_ratio": 5.462928032948632,
+        "volume_liquidity_ratio": 0.07943122451815295,
+        "tvl_liquidity_ratio": 8.47097174402611,
+        "fees_24h": null,
+        "fees_7d": null,
+        "fees_30d": null,
+        "revenue_24h": null,
+        "revenue_7d": null,
+        "revenue_30d": null,
+        "fee_tvl_ratio_30d": null,
+        "revenue_tvl_ratio_30d": null,
+        "dex_id": "uniswap",
+        "pair_url": "https://dexscreener.com/polygon/0x124fcfd1b923485c8ccf275afbee4bf557b232d6",
+        "score": 12,
+        "grade": "위험",
+        "verdict": "시장 구조/수익성/보안 중 하나 이상 부담",
+        "reasons": [
+          "TVL이 크지 않음",
+          "유동성이 양호",
+          "거래량이 무난",
+          "FDV/유동성 구조 양호",
+          "거래 회전이 약함",
+          "TVL 대비 시장 반응 무난",
+          "Fees 데이터 부족",
+          "Revenue 데이터 부족"
+        ],
+        "security": {
+          "token_address": "0x2c72D25530191EBD244Eb6325E1892480b0e6E28",
+          "is_honeypot": null,
+          "buy_tax": null,
+          "sell_tax": null,
+          "transfer_tax": null,
+          "can_buy": false,
+          "can_sell": false,
+          "top1_pct": null,
+          "top5_pct": null,
+          "risk_flags": [
+            "매도 불가 의심"
+          ]
+        }
+      }
+    }
   },
   "top_projects": [
     {
-      "name": "SolvBTC",
-      "score": 42,
-      "chain": "ethereum"
+      "name": "LGNS",
+      "liquidity_usd": 1461789340.4938002,
+      "volume_24h": 151442241.00452214,
+      "signal": "🔥 대규모 자금 유입"
     },
     {
-      "name": "Euler V2",
-      "score": 40,
-      "chain": "ethereum"
+      "name": "ARK",
+      "liquidity_usd": 79424986.34,
+      "volume_24h": 6156908.39,
+      "signal": "🔥 대규모 자금 유입"
     },
     {
-      "name": "Dolomite",
-      "score": 40,
-      "chain": "ethereum"
+      "name": "AS",
+      "liquidity_usd": 30805496.3278,
+      "volume_24h": 905704.5983922291,
+      "signal": ""
+    },
+    {
+      "name": "ASTER",
+      "liquidity_usd": 8702844.49,
+      "volume_24h": 15426255.130000005,
+      "signal": "🔥 대규모 자금 유입"
+    },
+    {
+      "name": "OLY",
+      "liquidity_usd": 13025848.18,
+      "volume_24h": 630921.25,
+      "signal": ""
+    },
+    {
+      "name": "KOGE",
+      "liquidity_usd": 5192138.09,
+      "volume_24h": 10329818.52,
+      "signal": "🔥 대규모 자금 유입"
+    },
+    {
+      "name": "BANK",
+      "liquidity_usd": 583719.81,
+      "volume_24h": 12154201.44,
+      "signal": "📈 거래량 강함"
+    },
+    {
+      "name": "FLOKI",
+      "liquidity_usd": 8581333.58,
+      "volume_24h": 147245.44,
+      "signal": ""
+    },
+    {
+      "name": "TAG",
+      "liquidity_usd": 2506046.28,
+      "volume_24h": 6541628.58,
+      "signal": "📈 거래량 강함"
+    },
+    {
+      "name": "SIREN",
+      "liquidity_usd": 4110273.78,
+      "volume_24h": 3622213.02,
+      "signal": "📈 거래량 강함"
     }
   ],
   "gecko_chain_snapshots": {
     "polygon": {
       "lgns": {
-        "name": "LGNS",
-        "liquidity_usd": 486381793.9618,
-        "volume_24h": 39868190.5871464
+        "liquidity_usd": 486983665.5938,
+        "volume_24h": 39895039.3245221
       },
       "as": {
-        "name": "AS",
-        "liquidity_usd": 15385009.0044,
-        "volume_24h": 402626.781105516
+        "liquidity_usd": 15406240.9178,
+        "volume_24h": 402879.058392229
       },
       "slgns019": {
-        "name": "sLGNS 0.19%",
-        "liquidity_usd": 397136.9352,
-        "volume_24h": 1672099.71195936
+        "liquidity_usd": 398677.9939,
+        "volume_24h": 1673150.59701316
       },
       "ces": {
-        "name": "CES",
-        "liquidity_usd": 2033549.8021,
-        "volume_24h": 1282083.9706055499
+        "liquidity_usd": 2035631.872,
+        "volume_24h": 1276741.009944867
       },
       "lgns0304": {
-        "name": "LGNS 0.304%",
-        "liquidity_usd": 128520.5104,
-        "volume_24h": 859933.2814529
+        "liquidity_usd": 128865.6572,
+        "volume_24h": 863544.666497538
       },
       "cnkt": {
-        "name": "CNKT+",
-        "liquidity_usd": 759339.0433,
-        "volume_24h": 424852.91470065096
-      },
-      "link": {
-        "name": "LINK",
-        "liquidity_usd": 395480.6757,
-        "volume_24h": 206546.8338950659
+        "liquidity_usd": 759015.6476,
+        "volume_24h": 422336.618029195
       },
       "aipf": {
-        "name": "AIPF",
-        "liquidity_usd": 2092882.6392,
-        "volume_24h": 140186.606819137
+        "liquidity_usd": 2090032.616,
+        "volume_24h": 146708.096935294
+      },
+      "link": {
+        "liquidity_usd": 395816.5426,
+        "volume_24h": 204069.9081492019
       },
       "pix": {
-        "name": "PiX",
-        "liquidity_usd": 3433162.5347,
+        "liquidity_usd": 3440456.2339,
         "volume_24h": 13964.4823042134
       },
       "nava": {
-        "name": "NAVA",
-        "liquidity_usd": 196159.8024,
-        "volume_24h": 362928.813217631
+        "liquidity_usd": 199116.4624,
+        "volume_24h": 363094.684074602
       },
       "geod": {
-        "name": "GEOD",
-        "liquidity_usd": 293646.1795,
-        "volume_24h": 52679.6571772656
+        "liquidity_usd": 291802.672,
+        "volume_24h": 52701.5321928072
       },
       "orbs": {
-        "name": "ORBS",
-        "liquidity_usd": 370918.2126,
-        "volume_24h": 41054.9391189136
+        "liquidity_usd": 367814.9182,
+        "volume_24h": 41114.9284268252
       },
       "quick": {
-        "name": "QUICK",
-        "liquidity_usd": 168201.9337,
-        "volume_24h": 76347.0646217318
+        "liquidity_usd": 168184.0262,
+        "volume_24h": 77252.8229836462
       },
       "aave03": {
-        "name": "AAVE 0.3%",
-        "liquidity_usd": 213999.23,
-        "volume_24h": 142955.970010173
+        "liquidity_usd": 214133.236,
+        "volume_24h": 140769.505364829
       },
       "edx": {
-        "name": "EDX",
-        "liquidity_usd": 52540.7733,
-        "volume_24h": 139.0438052007
+        "liquidity_usd": 52616.3388,
+        "volume_24h": 140.331399371
       },
       "uni": {
-        "name": "UNI",
-        "liquidity_usd": 89677.73,
-        "volume_24h": 52162.0876275066
+        "liquidity_usd": 89733.6345,
+        "volume_24h": 52143.0670215322
       },
       "aave": {
-        "name": "AAVE",
-        "liquidity_usd": 92480.3826,
-        "volume_24h": 46226.2209365522
+        "liquidity_usd": 92538.2937,
+        "volume_24h": 45829.2955746909
       },
       "tel02": {
-        "name": "TEL 0.2%",
-        "liquidity_usd": 737502.2261,
-        "volume_24h": 57921.3410003584
+        "liquidity_usd": 738902.715,
+        "volume_24h": 58031.7377323797
       },
       "idl": {
-        "name": "IDL",
-        "liquidity_usd": 1414629.7615,
-        "volume_24h": 41770.8637724151
+        "liquidity_usd": 1418225.7489,
+        "volume_24h": 42369.2321577247
       },
       "brz": {
-        "name": "BRZ",
-        "liquidity_usd": 70613.0673,
-        "volume_24h": 101021.554784447
+        "liquidity_usd": 70705.7931,
+        "volume_24h": 102376.573592745
       },
       "tel03": {
-        "name": "TEL 0.3%",
-        "liquidity_usd": 136886.1586,
-        "volume_24h": 143373.389684843
-      },
-      "ebcc": {
-        "name": "EBCC",
-        "liquidity_usd": 153064.4793,
-        "volume_24h": 16151.313457375
+        "liquidity_usd": 136967.001,
+        "volume_24h": 143898.789384608
       },
       "brla005": {
-        "name": "BRLA 0.05%",
-        "liquidity_usd": 188367.5095,
-        "volume_24h": 204701.550725131
+        "liquidity_usd": 189299.1214,
+        "volume_24h": 207646.566017307
+      },
+      "ebcc": {
+        "liquidity_usd": 153363.0776,
+        "volume_24h": 15649.3877081163
       },
       "tel": {
-        "name": "TEL",
-        "liquidity_usd": 250320.1776,
-        "volume_24h": 83172.0862263457
+        "liquidity_usd": 250476.9277,
+        "volume_24h": 81732.883459928
       }
     },
     "bsc": {}
   },
+  "security_snapshots": {},
   "unified_flow": {
     "lgns": {
-      "name": "LGNS",
-      "liq": 1461254862.5818,
-      "vol": 151356505.61714637
+      "liq": 1461789340.4938002,
+      "vol": 151442241.00452214
     },
     "ark": {
-      "name": "ARK",
-      "liq": 79369214.6,
-      "vol": 6121927.82
-    },
-    "aster": {
-      "name": "ASTER",
-      "liq": 8693249.700000001,
-      "vol": 15414065.700000003
+      "liq": 79424986.34,
+      "vol": 6156908.39
     },
     "as": {
-      "name": "AS",
-      "liq": 30786573.9244,
-      "vol": 905154.181105516
+      "liq": 30805496.3278,
+      "vol": 905704.5983922291
     },
-    "koge": {
-      "name": "KOGE",
-      "liq": 5192137.79,
-      "vol": 10339985.88
-    },
-    "siren": {
-      "name": "SIREN",
-      "liq": 4077614.76,
-      "vol": 3671963.23
+    "aster": {
+      "liq": 8702844.49,
+      "vol": 15426255.130000005
     },
     "oly": {
-      "name": "OLY",
-      "liq": 13027035.74,
-      "vol": 631596.92
+      "liq": 13025848.18,
+      "vol": 630921.25
+    },
+    "koge": {
+      "liq": 5192138.09,
+      "vol": 10329818.52
+    },
+    "bank": {
+      "liq": 583719.81,
+      "vol": 12154201.44
+    },
+    "floki": {
+      "liq": 8581333.58,
+      "vol": 147245.44
     },
     "tag": {
-      "name": "TAG",
-      "liq": 2493653.56,
-      "vol": 6527037.43
+      "liq": 2506046.28,
+      "vol": 6541628.58
     },
-    "stbl": {
-      "name": "STBL",
-      "liq": 1947223.08,
-      "vol": 3397169.44
-    },
-    "ces": {
-      "name": "CES",
-      "liq": 2311827.9820999997,
-      "vol": 1815239.27060555
+    "siren": {
+      "liq": 4110273.78,
+      "vol": 3622213.02
     }
   }
 }
