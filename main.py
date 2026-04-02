@@ -31,7 +31,6 @@ ALLOWED_CATEGORIES = {
     "RWA",
 }
 
-# BSC / Polygon 별도 모니터링용 검색 키워드
 BSC_SEARCH_TERMS = [
     "PancakeSwap",
     "Venus",
@@ -77,7 +76,7 @@ def save_state(state: Dict[str, Any]) -> None:
         json.dump(state, f, ensure_ascii=False, indent=2)
 
 
-def to_float(value: Any, default: float = 0.0) -> float:
+def to_float(value: Any, default: Optional[float] = 0.0) -> Optional[float]:
     try:
         if value is None:
             return default
@@ -105,12 +104,16 @@ def fmt_num(value: Any) -> str:
     return f"{num:.6f}"
 
 
+def normalize_name(text: str) -> str:
+    return "".join(ch.lower() for ch in (text or "") if ch.isalnum())
+
+
 def get_llama_protocols() -> List[Dict[str, Any]]:
     r = requests.get(LLAMA_PROTOCOLS_URL, timeout=30)
     r.raise_for_status()
     data = r.json()
     if not isinstance(data, list):
-        raise ValueError("DefiLlama 응답 형식 오류")
+        raise ValueError("DefiLlama protocols 응답 형식 오류")
     return data
 
 
@@ -122,7 +125,6 @@ def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
     r = requests.get(DEX_SEARCH_URL, params={"q": query}, timeout=30)
     if r.status_code == 400:
         return []
-
     r.raise_for_status()
     data = r.json()
     return data.get("pairs", []) or []
@@ -132,7 +134,7 @@ def filter_llama_protocols(protocols: List[Dict[str, Any]]) -> List[Dict[str, An
     result = []
     for p in protocols:
         category = p.get("category")
-        tvl = to_float(p.get("tvl"))
+        tvl = to_float(p.get("tvl"), 0.0) or 0.0
         chains = [c.lower() for c in (p.get("chains") or [])]
 
         if category not in ALLOWED_CATEGORIES:
@@ -144,7 +146,49 @@ def filter_llama_protocols(protocols: List[Dict[str, Any]]) -> List[Dict[str, An
 
         result.append(p)
 
-    return sorted(result, key=lambda x: to_float(x.get("tvl")), reverse=True)
+    return sorted(result, key=lambda x: to_float(x.get("tvl"), 0.0) or 0.0, reverse=True)
+
+
+def match_protocol_from_pairs(protocol: Dict[str, Any], pairs: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    protocol_name = normalize_name(protocol.get("name") or "")
+    protocol_symbol = normalize_name(protocol.get("symbol") or "")
+
+    if not pairs:
+        return None
+
+    best_pair = None
+    best_score = -1
+
+    for pair in pairs:
+        base = pair.get("baseToken") or {}
+        quote = pair.get("quoteToken") or {}
+
+        base_name = normalize_name(base.get("name") or "")
+        base_symbol = normalize_name(base.get("symbol") or "")
+        quote_name = normalize_name(quote.get("name") or "")
+        quote_symbol = normalize_name(quote.get("symbol") or "")
+
+        score = 0
+
+        if protocol_name and protocol_name in {base_name, quote_name}:
+            score += 10
+        if protocol_symbol and protocol_symbol in {base_symbol, quote_symbol}:
+            score += 6
+        if protocol_name and protocol_name in base_name:
+            score += 4
+        if protocol_name and protocol_name in quote_name:
+            score += 2
+
+        liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
+        volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
+        score += min(liquidity_usd / 1_000_000, 5)
+        score += min(volume_24h / 1_000_000, 3)
+
+        if score > best_score:
+            best_score = score
+            best_pair = pair
+
+    return best_pair
 
 
 def choose_best_pair_for_protocol(protocol: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -162,11 +206,10 @@ def choose_best_pair_for_protocol(protocol: Dict[str, Any]) -> Optional[Dict[str
 
     all_pairs: List[Dict[str, Any]] = []
     for q in queries:
-        pairs = search_dex_pairs(q)
-        all_pairs.extend(pairs)
+        all_pairs.extend(search_dex_pairs(q))
 
-    filtered_pairs = []
     allowed_protocol_chains = {c.lower() for c in (protocol.get("chains") or [])}
+    filtered_pairs = []
 
     for pair in all_pairs:
         chain_id = (pair.get("chainId") or "").lower()
@@ -175,8 +218,8 @@ def choose_best_pair_for_protocol(protocol: Dict[str, Any]) -> Optional[Dict[str
         if allowed_protocol_chains and chain_id not in allowed_protocol_chains:
             continue
 
-        liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"))
-        volume_24h = to_float((pair.get("volume") or {}).get("h24"))
+        liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
+        volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
 
         if liquidity_usd < 100_000:
             continue
@@ -185,38 +228,59 @@ def choose_best_pair_for_protocol(protocol: Dict[str, Any]) -> Optional[Dict[str
 
         filtered_pairs.append(pair)
 
-    if not filtered_pairs:
-        return None
+    return match_protocol_from_pairs(protocol, filtered_pairs)
 
-    return max(
-        filtered_pairs,
-        key=lambda p: (
-            to_float((p.get("liquidity") or {}).get("usd")),
-            to_float((p.get("volume") or {}).get("h24")),
-        ),
-    )
+
+def get_fee_revenue_metrics(protocol: Dict[str, Any]) -> Dict[str, Optional[float]]:
+    fees_24h = to_float(protocol.get("fees24h"), None)
+    fees_7d = to_float(protocol.get("fees7d"), None)
+    fees_30d = to_float(protocol.get("fees30d"), None)
+
+    revenue_24h = to_float(protocol.get("revenue24h"), None)
+    revenue_7d = to_float(protocol.get("revenue7d"), None)
+    revenue_30d = to_float(protocol.get("revenue30d"), None)
+
+    return {
+        "fees_24h": fees_24h,
+        "fees_7d": fees_7d,
+        "fees_30d": fees_30d,
+        "revenue_24h": revenue_24h,
+        "revenue_7d": revenue_7d,
+        "revenue_30d": revenue_30d,
+    }
 
 
 def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str, Any]:
-    liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"))
-    volume_24h = to_float((pair.get("volume") or {}).get("h24"))
-    fdv = to_float(pair.get("fdv"))
-    market_cap = to_float(pair.get("marketCap"))
+    liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
+    volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
+    fdv = to_float(pair.get("fdv"), 0.0) or 0.0
+    market_cap = to_float(pair.get("marketCap"), 0.0) or 0.0
     price_usd = to_float(pair.get("priceUsd"), None)
 
-    tvl = to_float(protocol.get("tvl"))
+    tvl = to_float(protocol.get("tvl"), 0.0) or 0.0
     category = protocol.get("category") or "-"
     chain_id = (pair.get("chainId") or "").lower()
     dex_id = pair.get("dexId") or "-"
     pair_url = pair.get("url") or "-"
 
+    metrics = get_fee_revenue_metrics(protocol)
+    fees_24h = metrics["fees_24h"]
+    fees_7d = metrics["fees_7d"]
+    fees_30d = metrics["fees_30d"]
+    revenue_24h = metrics["revenue_24h"]
+    revenue_7d = metrics["revenue_7d"]
+    revenue_30d = metrics["revenue_30d"]
+
     fdv_liquidity_ratio = (fdv / liquidity_usd) if liquidity_usd > 0 and fdv > 0 else 0.0
     volume_liquidity_ratio = (volume_24h / liquidity_usd) if liquidity_usd > 0 else 0.0
     tvl_liquidity_ratio = (tvl / liquidity_usd) if liquidity_usd > 0 and tvl > 0 else 0.0
+    fee_tvl_ratio_30d = (fees_30d / tvl) if fees_30d and tvl > 0 else None
+    revenue_tvl_ratio_30d = (revenue_30d / tvl) if revenue_30d and tvl > 0 else None
 
     score = 100
     reasons = []
 
+    # TVL
     if tvl >= 100_000_000:
         reasons.append("TVL이 매우 큼")
     elif tvl >= 20_000_000:
@@ -225,6 +289,7 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         score -= 12
         reasons.append("TVL이 크지 않음")
 
+    # Liquidity
     if liquidity_usd >= 500_000:
         reasons.append("유동성이 양호")
     elif liquidity_usd >= 200_000:
@@ -233,6 +298,7 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         score -= 12
         reasons.append("유동성이 낮음")
 
+    # Volume
     if volume_24h >= 500_000:
         reasons.append("거래량이 강함")
     elif volume_24h >= 150_000:
@@ -241,6 +307,7 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         score -= 10
         reasons.append("거래량이 낮음")
 
+    # FDV vs Liquidity
     if fdv_liquidity_ratio > 20:
         score -= 20
         reasons.append("FDV 대비 유동성 부담")
@@ -250,6 +317,7 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
     else:
         reasons.append("FDV/유동성 구조 양호")
 
+    # Volume vs Liquidity
     if volume_liquidity_ratio < 0.2:
         score -= 8
         reasons.append("거래 회전이 약함")
@@ -259,25 +327,72 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
     else:
         reasons.append("거래 회전이 무난")
 
+    # TVL vs Liquidity
     if tvl_liquidity_ratio < 5:
         score -= 8
         reasons.append("TVL 대비 시장 반응 약함")
     else:
         reasons.append("TVL 대비 시장 반응 무난")
 
+    # Fees
+    if fees_30d is None:
+        score -= 10
+        reasons.append("Fees 데이터 부족")
+    elif fees_30d >= 5_000_000:
+        score += 8
+        reasons.append("Fees 30d가 강함")
+    elif fees_30d >= 500_000:
+        score += 3
+        reasons.append("Fees 30d가 무난")
+    else:
+        score -= 6
+        reasons.append("Fees 30d가 약함")
+
+    # Revenue
+    if revenue_30d is None:
+        score -= 12
+        reasons.append("Revenue 데이터 부족")
+    elif revenue_30d >= 1_000_000:
+        score += 10
+        reasons.append("Revenue 30d가 강함")
+    elif revenue_30d >= 100_000:
+        score += 4
+        reasons.append("Revenue 30d가 무난")
+    else:
+        score -= 8
+        reasons.append("Revenue 30d가 약함")
+
+    # Fee/TVL
+    if fee_tvl_ratio_30d is not None:
+        if fee_tvl_ratio_30d >= 0.03:
+            score += 6
+            reasons.append("TVL 대비 Fees 효율 높음")
+        elif fee_tvl_ratio_30d < 0.005:
+            score -= 6
+            reasons.append("TVL 대비 Fees 효율 낮음")
+
+    # Revenue/TVL
+    if revenue_tvl_ratio_30d is not None:
+        if revenue_tvl_ratio_30d >= 0.01:
+            score += 6
+            reasons.append("TVL 대비 Revenue 효율 높음")
+        elif revenue_tvl_ratio_30d < 0.002:
+            score -= 6
+            reasons.append("TVL 대비 Revenue 효율 낮음")
+
     if category in {"Dexes", "Lending", "Derivatives", "Bridge"}:
         score += 3
         reasons.append("주요 DeFi 카테고리")
 
-    if score >= 85:
+    if score >= 88:
         grade = "관심"
-        verdict = "진짜 디파이 후보로 우선 검토"
-    elif score >= 70:
+        verdict = "수익성까지 포함해 우선 검토 가치 높음"
+    elif score >= 72:
         grade = "관찰"
-        verdict = "추가 확인할 가치 있음"
+        verdict = "기초체력은 있으나 추가 검증 필요"
     else:
         grade = "위험"
-        verdict = "시장 구조 또는 밸류 부담 존재"
+        verdict = "시장 구조 또는 수익성 부담 존재"
 
     return {
         "name": protocol.get("name") or "-",
@@ -293,12 +408,20 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         "fdv_liquidity_ratio": fdv_liquidity_ratio,
         "volume_liquidity_ratio": volume_liquidity_ratio,
         "tvl_liquidity_ratio": tvl_liquidity_ratio,
+        "fees_24h": fees_24h,
+        "fees_7d": fees_7d,
+        "fees_30d": fees_30d,
+        "revenue_24h": revenue_24h,
+        "revenue_7d": revenue_7d,
+        "revenue_30d": revenue_30d,
+        "fee_tvl_ratio_30d": fee_tvl_ratio_30d,
+        "revenue_tvl_ratio_30d": revenue_tvl_ratio_30d,
         "dex_id": dex_id,
         "pair_url": pair_url,
         "score": max(score, 0),
         "grade": grade,
         "verdict": verdict,
-        "reasons": reasons[:6],
+        "reasons": reasons[:7],
     }
 
 
@@ -375,10 +498,9 @@ def build_chain_top3_from_search(chain_name: str, search_terms: List[str]) -> Di
             if pair_chain != chain_name:
                 continue
 
-            liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"))
-            volume_24h = to_float((pair.get("volume") or {}).get("h24"))
+            liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
+            volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
 
-            # 별도 모니터링은 너무 빡빡하지 않게 최소 조건만
             if liquidity_usd < 10_000 and volume_24h < 5_000:
                 continue
 
@@ -389,8 +511,8 @@ def build_chain_top3_from_search(chain_name: str, search_terms: List[str]) -> Di
                 "symbol": base.get("symbol") or "-",
                 "liquidity_usd": liquidity_usd,
                 "volume_24h": volume_24h,
-                "fdv": to_float(pair.get("fdv")),
-                "market_cap": to_float(pair.get("marketCap")),
+                "fdv": to_float(pair.get("fdv"), 0.0) or 0.0,
+                "market_cap": to_float(pair.get("marketCap"), 0.0) or 0.0,
                 "price_usd": to_float(pair.get("priceUsd"), None),
                 "pair_url": pair.get("url") or "-",
             }
@@ -433,9 +555,13 @@ def build_message(
             lines.append(f"- 24h 거래량: {fmt_num(p['volume_24h'])}")
             lines.append(f"- FDV: {fmt_num(p['fdv'])}")
             lines.append(f"- 시총: {fmt_num(p['market_cap'])}")
+            lines.append(f"- Fees 24h / 7d / 30d: {fmt_num(p['fees_24h'])} / {fmt_num(p['fees_7d'])} / {fmt_num(p['fees_30d'])}")
+            lines.append(f"- Revenue 24h / 7d / 30d: {fmt_num(p['revenue_24h'])} / {fmt_num(p['revenue_7d'])} / {fmt_num(p['revenue_30d'])}")
             lines.append(f"- FDV/유동성: {p['fdv_liquidity_ratio']:.2f}")
             lines.append(f"- 거래량/유동성: {p['volume_liquidity_ratio']:.2f}")
             lines.append(f"- TVL/유동성: {p['tvl_liquidity_ratio']:.2f}")
+            lines.append(f"- Fees30d/TVL: {p['fee_tvl_ratio_30d']:.4f}" if p['fee_tvl_ratio_30d'] is not None else "- Fees30d/TVL: -")
+            lines.append(f"- Revenue30d/TVL: {p['revenue_tvl_ratio_30d']:.4f}" if p['revenue_tvl_ratio_30d'] is not None else "- Revenue30d/TVL: -")
             lines.append(f"- DEX: {p['dex_id']}")
             lines.append(f"- 핵심 이유: {', '.join(p['reasons'])}")
             lines.append(f"- 링크: {p['pair_url']}")
@@ -467,9 +593,7 @@ def build_message(
     lines.append("[BSC 별도 모니터링 - 유동성 TOP 3]")
     if bsc_top3["liquidity"]:
         for i, p in enumerate(bsc_top3["liquidity"], start=1):
-            lines.append(
-                f"{i}) {p['name']} ({p['symbol']}) / 유동성 {fmt_num(p['liquidity_usd'])} / 거래량 {fmt_num(p['volume_24h'])}"
-            )
+            lines.append(f"{i}) {p['name']} ({p['symbol']}) / 유동성 {fmt_num(p['liquidity_usd'])} / 거래량 {fmt_num(p['volume_24h'])}")
     else:
         lines.append("- 후보 없음")
 
@@ -477,9 +601,7 @@ def build_message(
     lines.append("[BSC 별도 모니터링 - 거래량 TOP 3]")
     if bsc_top3["volume"]:
         for i, p in enumerate(bsc_top3["volume"], start=1):
-            lines.append(
-                f"{i}) {p['name']} ({p['symbol']}) / 거래량 {fmt_num(p['volume_24h'])} / 유동성 {fmt_num(p['liquidity_usd'])}"
-            )
+            lines.append(f"{i}) {p['name']} ({p['symbol']}) / 거래량 {fmt_num(p['volume_24h'])} / 유동성 {fmt_num(p['liquidity_usd'])}")
     else:
         lines.append("- 후보 없음")
 
@@ -487,9 +609,7 @@ def build_message(
     lines.append("[Polygon 별도 모니터링 - 유동성 TOP 3]")
     if polygon_top3["liquidity"]:
         for i, p in enumerate(polygon_top3["liquidity"], start=1):
-            lines.append(
-                f"{i}) {p['name']} ({p['symbol']}) / 유동성 {fmt_num(p['liquidity_usd'])} / 거래량 {fmt_num(p['volume_24h'])}"
-            )
+            lines.append(f"{i}) {p['name']} ({p['symbol']}) / 유동성 {fmt_num(p['liquidity_usd'])} / 거래량 {fmt_num(p['volume_24h'])}")
     else:
         lines.append("- 후보 없음")
 
@@ -497,9 +617,7 @@ def build_message(
     lines.append("[Polygon 별도 모니터링 - 거래량 TOP 3]")
     if polygon_top3["volume"]:
         for i, p in enumerate(polygon_top3["volume"], start=1):
-            lines.append(
-                f"{i}) {p['name']} ({p['symbol']}) / 거래량 {fmt_num(p['volume_24h'])} / 유동성 {fmt_num(p['liquidity_usd'])}"
-            )
+            lines.append(f"{i}) {p['name']} ({p['symbol']}) / 거래량 {fmt_num(p['volume_24h'])} / 유동성 {fmt_num(p['liquidity_usd'])}")
     else:
         lines.append("- 후보 없음")
 
