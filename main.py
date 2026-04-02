@@ -1,5 +1,6 @@
-import os
+ import os
 import json
+import time
 import requests
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -10,7 +11,6 @@ STATE_FILE = "state.json"
 
 LLAMA_PROTOCOLS_URL = "https://api.llama.fi/protocols"
 DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
-DEX_TOKEN_PAIRS_URL = "https://api.dexscreener.com/token-pairs/v1/{chain_id}/{token_address}"
 GECKO_POOLS_URL = "https://api.geckoterminal.com/api/v2/networks/{network}/pools?page={page}"
 HONEYPOT_CHECK_URL = "https://api.honeypot.is/v2/IsHoneypot"
 HONEYPOT_TOP_HOLDERS_URL = "https://api.honeypot.is/v1/TopHolders"
@@ -49,13 +49,23 @@ BAD_KEYWORDS = [
     "doge", "inu", "baby", "banana", "pepe", "elon", "cat", "shib", "meme"
 ]
 
+# 429 방지를 위해 검색어 축소
 BSC_SEARCH_TERMS = [
-    "usdt", "wbnb", "cake", "floki", "btcb", "eth", "fdusd", "usdc",
-    "thena", "venus", "lista", "biswap", "wombat", "aster", "slisbnb"
+    "usdt",
+    "wbnb",
+    "cake",
+    "btcb",
+    "fdusd",
+    "usdc",
+    "thena",
+    "venus",
 ]
 
 POLYGON_SEARCH_TERMS = [
-    "LGNS", "QuickSwap", "Aave", "Uniswap", "Balancer", "Curve", "Sushi", "Kyber"
+    "LGNS",
+    "QuickSwap",
+    "Aave",
+    "Uniswap",
 ]
 
 REAL_EARNER_MIN_FEES_30D = 50_000
@@ -66,6 +76,9 @@ REAL_EARNER_MAX_FDV_LIQ_RATIO = 30
 GECKO_PAGES = 10
 GECKO_MIN_LIQUIDITY = 50_000
 DEX_BSC_MIN_LIQUIDITY = 50_000
+
+REQUEST_SLEEP = 0.35
+DEX_SEARCH_CACHE: Dict[str, List[Dict[str, Any]]] = {}
 
 
 def send_telegram_message(text: str) -> None:
@@ -114,11 +127,11 @@ def fmt_num(value: Any) -> str:
         return str(value)
 
     if num >= 1_000_000_000:
-        return f"{num/1_000_000_000:.2f}B"
+        return f"{num / 1_000_000_000:.2f}B"
     if num >= 1_000_000:
-        return f"{num/1_000_000:.2f}M"
+        return f"{num / 1_000_000:.2f}M"
     if num >= 1_000:
-        return f"{num/1_000:.2f}K"
+        return f"{num / 1_000:.2f}K"
     if num >= 1:
         return f"{num:.2f}"
     return f"{num:.6f}"
@@ -170,28 +183,45 @@ def get_llama_protocols() -> List[Dict[str, Any]]:
     return data if isinstance(data, list) else []
 
 
-def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
+def search_dex_pairs(query: str, retries: int = 3, sleep_sec: float = 1.2) -> List[Dict[str, Any]]:
     query = (query or "").strip()
     if not query:
         return []
 
-    r = requests.get(DEX_SEARCH_URL, params={"q": query}, timeout=30)
-    if r.status_code == 400:
-        return []
-    r.raise_for_status()
-    data = r.json()
-    return data.get("pairs", []) or []
+    cache_key = query.lower()
+    if cache_key in DEX_SEARCH_CACHE:
+        return DEX_SEARCH_CACHE[cache_key]
 
+    params = {"q": query}
 
-def get_token_pairs(chain_id: str, token_address: str) -> List[Dict[str, Any]]:
-    if not chain_id or not token_address:
-        return []
-    url = DEX_TOKEN_PAIRS_URL.format(chain_id=chain_id, token_address=token_address)
-    r = requests.get(url, timeout=30)
-    if r.status_code >= 400:
-        return []
-    data = r.json()
-    return data if isinstance(data, list) else []
+    for attempt in range(retries):
+        try:
+            r = requests.get(DEX_SEARCH_URL, params=params, timeout=30)
+
+            if r.status_code == 400:
+                DEX_SEARCH_CACHE[cache_key] = []
+                return []
+
+            if r.status_code == 429:
+                time.sleep(sleep_sec * (attempt + 1))
+                continue
+
+            if r.status_code >= 500:
+                time.sleep(sleep_sec * (attempt + 1))
+                continue
+
+            r.raise_for_status()
+            data = r.json()
+            pairs = data.get("pairs", []) or []
+            DEX_SEARCH_CACHE[cache_key] = pairs
+            time.sleep(REQUEST_SLEEP)
+            return pairs
+
+        except requests.RequestException:
+            time.sleep(sleep_sec * (attempt + 1))
+
+    DEX_SEARCH_CACHE[cache_key] = []
+    return []
 
 
 def filter_llama_protocols(protocols: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -262,8 +292,13 @@ def choose_best_pair_for_protocol(protocol: Dict[str, Any]) -> Optional[Dict[str
     queries = []
     if name:
         queries.append(name)
-    if symbol and symbol.lower() != name.lower():
+    elif symbol:
         queries.append(symbol)
+
+    if symbol and name and symbol.lower() != name.lower():
+        queries.append(symbol)
+
+    queries = queries[:2]
 
     if not queries:
         return None
@@ -708,6 +743,7 @@ def fetch_gecko_chain_pools(network: str, pages: int = GECKO_PAGES) -> List[Dict
             if r.status_code >= 400:
                 continue
             data = r.json().get("data", [])
+            time.sleep(REQUEST_SLEEP)
         except Exception:
             continue
 
@@ -722,7 +758,7 @@ def fetch_gecko_chain_pools(network: str, pages: int = GECKO_PAGES) -> List[Dict
     return pools
 
 
-def merge_gecko_records_by_token(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def merge_records_by_token(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     merged: Dict[str, Dict[str, Any]] = {}
 
     for r in records:
@@ -784,19 +820,10 @@ def build_chain_top3_gecko(chain_key: str, prev_state: Dict[str, Any]) -> Dict[s
             continue
         filtered_pools.append(pool)
 
-    top_liquidity_pools = sorted(
-        filtered_pools,
-        key=lambda x: x["liquidity_usd"],
-        reverse=True,
-    )[:3]
+    top_liquidity_pools = sorted(filtered_pools, key=lambda x: x["liquidity_usd"], reverse=True)[:3]
+    top_volume_pools = sorted(filtered_pools, key=lambda x: x["volume_24h"], reverse=True)[:3]
 
-    top_volume_pools = sorted(
-        filtered_pools,
-        key=lambda x: x["volume_24h"],
-        reverse=True,
-    )[:3]
-
-    merged_tokens = merge_gecko_records_by_token(filtered_pools)
+    merged_tokens = merge_records_by_token(filtered_pools)
 
     token_records = []
     for token in merged_tokens:
@@ -854,11 +881,8 @@ def build_bsc_top3_dex(prev_state: Dict[str, Any]) -> Dict[str, List[Dict[str, A
     all_pairs: List[Dict[str, Any]] = []
     seen_addresses = set()
 
-    for term in BSC_SEARCH_TERMS:
-        try:
-            pairs = search_dex_pairs(term)
-        except Exception:
-            continue
+    for term in BSC_SEARCH_TERMS[:8]:
+        pairs = search_dex_pairs(term)
 
         for pair in pairs:
             record = dex_pair_to_record(pair)
@@ -875,19 +899,10 @@ def build_bsc_top3_dex(prev_state: Dict[str, Any]) -> Dict[str, List[Dict[str, A
 
             all_pairs.append(record)
 
-    top_liquidity_pools = sorted(
-        all_pairs,
-        key=lambda x: x["liquidity_usd"],
-        reverse=True,
-    )[:3]
+    top_liquidity_pools = sorted(all_pairs, key=lambda x: x["liquidity_usd"], reverse=True)[:3]
+    top_volume_pools = sorted(all_pairs, key=lambda x: x["volume_24h"], reverse=True)[:3]
 
-    top_volume_pools = sorted(
-        all_pairs,
-        key=lambda x: x["volume_24h"],
-        reverse=True,
-    )[:3]
-
-    merged_tokens = merge_gecko_records_by_token(all_pairs)
+    merged_tokens = merge_records_by_token(all_pairs)
 
     token_records = []
     for token in merged_tokens:
@@ -904,8 +919,15 @@ def build_bsc_top3_dex(prev_state: Dict[str, Any]) -> Dict[str, List[Dict[str, A
 
 
 def collect_dex_pairs_for_unified_ranking() -> List[Dict[str, Any]]:
-    terms = list(set(BSC_SEARCH_TERMS + POLYGON_SEARCH_TERMS))
+    terms: List[str] = []
+    for x in BSC_SEARCH_TERMS + POLYGON_SEARCH_TERMS:
+        if x not in terms:
+            terms.append(x)
+
     all_pairs: List[Dict[str, Any]] = []
+    seen = set()
+
+    terms = terms[:10]
 
     for term in terms:
         pairs = search_dex_pairs(term)
@@ -913,6 +935,14 @@ def collect_dex_pairs_for_unified_ranking() -> List[Dict[str, Any]]:
             chain = (pair.get("chainId") or "").lower()
             if chain not in {"bsc", "polygon"}:
                 continue
+
+            pair_addr = pair.get("pairAddress") or ""
+            dex_id = pair.get("dexId") or ""
+            key = f"{chain}:{dex_id}:{pair_addr}"
+            if key in seen:
+                continue
+            seen.add(key)
+
             all_pairs.append(pair)
 
     return all_pairs
@@ -1020,7 +1050,7 @@ def build_message(
     unified_top = build_unified_top(polygon_top3, bsc_top3, dex_pairs, prev_state)
 
     lines = []
-    lines.append("🚀 DeFi 실전 투자 봇 v7.3")
+    lines.append("🚀 DeFi 실전 투자 봇 v7.4")
     lines.append("")
 
     lines.append("[메인 분석 TOP 3]")
@@ -1060,6 +1090,8 @@ def build_message(
         lines.append(
             f"{idx}) {item['name']} / 유동성 {fmt_num(item['liquidity_usd'])} / 거래량 {fmt_num(item['volume_24h'])}{tail}"
         )
+    if not unified_top:
+        lines.append("- 데이터 없음")
     lines.append("")
 
     lines.append("[Polygon 유동성 TOP 3 - GeckoTerminal 풀 기준]")
@@ -1067,6 +1099,8 @@ def build_message(
         lines.append(
             f"{idx}) {item['pool_name']} / 유동성 {fmt_num(item['liquidity_usd'])} / 거래량 {fmt_num(item['volume_24h'])}"
         )
+    if not polygon_top3["liquidity"]:
+        lines.append("- 데이터 없음")
     lines.append("")
 
     lines.append("[Polygon 거래량 TOP 3 - GeckoTerminal 풀 기준]")
@@ -1074,6 +1108,8 @@ def build_message(
         lines.append(
             f"{idx}) {item['pool_name']} / 거래량 {fmt_num(item['volume_24h'])} / 유동성 {fmt_num(item['liquidity_usd'])}"
         )
+    if not polygon_top3["volume"]:
+        lines.append("- 데이터 없음")
     lines.append("")
 
     lines.append("[BSC 유동성 TOP 3 - DexScreener 풀 기준]")
