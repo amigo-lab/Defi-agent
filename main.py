@@ -1,6 +1,5 @@
 import os
 import json
-import math
 import requests
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -28,7 +27,7 @@ ALLOWED_CHAINS = {
 
 CHAIN_TO_GECKO = {
     "polygon": "polygon_pos",
-    "bsc": "binance-smart-chain",  # ← 수정: "bsc" → "binance-smart-chain"
+    "bsc": "bsc",
 }
 
 ALLOWED_CATEGORIES = {
@@ -64,7 +63,7 @@ REAL_EARNER_MIN_REVENUE_30D = 10_000
 REAL_EARNER_MIN_LIQUIDITY = 150_000
 REAL_EARNER_MAX_FDV_LIQ_RATIO = 30
 
-GECKO_PAGES = 5
+GECKO_PAGES = 10
 GECKO_MIN_LIQUIDITY = 50_000
 
 
@@ -153,13 +152,10 @@ def is_valid_token(name: str) -> bool:
 
     if n in EXCLUDE_TOKENS:
         return False
-
     if any(x in n for x in EXCLUDE_TOKENS):
         return False
-
     if is_bad_name(name):
         return False
-
     if len(n) < 2:
         return False
 
@@ -656,76 +652,54 @@ def build_chain_leaders(projects: List[Dict[str, Any]]) -> Dict[str, Dict[str, D
     return leaders
 
 
-def compare_leaders(prev_state: Dict[str, Any], current_leaders: Dict[str, Dict[str, Dict[str, Any]]]) -> List[str]:
-    messages = []
-    prev_leaders = prev_state.get("chain_leaders", {})
+def extract_primary_token_from_pool_name(pool_name: str) -> str:
+    if not pool_name:
+        return "-"
 
-    for chain in ["ethereum", "arbitrum", "base", "bsc", "polygon"]:
-        data = current_leaders.get(chain, {})
-        prev_chain = prev_leaders.get(chain, {})
+    clean = pool_name.split("(")[0].strip()
+    parts = [x.strip() for x in clean.split("/") if x.strip()]
 
-        current_liq_name = data.get("liquidity", {}).get("name", "-")
-        prev_liq_name = prev_chain.get("liquidity", {}).get("name", "-")
-        liq_status = "유지" if current_liq_name == prev_liq_name else f"변경 ({prev_liq_name} → {current_liq_name})"
+    if len(parts) < 2:
+        return clean
 
-        current_vol_name = data.get("volume", {}).get("name", "-")
-        prev_vol_name = prev_chain.get("volume", {}).get("name", "-")
-        vol_status = "유지" if current_vol_name == prev_vol_name else f"변경 ({prev_vol_name} → {current_vol_name})"
+    left, right = parts[0], parts[1]
+    left_excluded = is_excluded_token(left)
+    right_excluded = is_excluded_token(right)
 
-        messages.append(f"- {chain} 유동성 1위: {liq_status}")
-        messages.append(f"- {chain} 거래량 1위: {vol_status}")
-
-    return messages
+    if left_excluded and not right_excluded:
+        return right
+    if right_excluded and not left_excluded:
+        return left
+    return left
 
 
 def gecko_pool_to_record(pool: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    attr = pool.get("attributes", {})
-    name = attr.get("name") or "-"
-
+    attr = pool.get("attributes", {}) or {}
+    pool_name = attr.get("name") or "-"
     reserve = to_float(attr.get("reserve_in_usd"), 0.0) or 0.0
     volume_obj = attr.get("volume_usd") or {}
     volume_24h = to_float(volume_obj.get("h24"), 0.0) or 0.0
+    address = attr.get("address") or ""
+    created_at = attr.get("pool_created_at") or ""
 
     if reserve < GECKO_MIN_LIQUIDITY:
         return None
 
-    parts = [x.strip() for x in name.split("/")[:2] if x.strip()]
-    if not parts:
-        return None
-
-    token_name = None
-
-    if len(parts) >= 2:
-        left = parts[0]
-        right = parts[1]
-
-        left_excluded = is_excluded_token(left) or is_bad_name(left)
-        right_excluded = is_excluded_token(right) or is_bad_name(right)
-
-        if left_excluded and not right_excluded:
-            token_name = right
-        elif right_excluded and not left_excluded:
-            token_name = left
-        elif not left_excluded and not right_excluded:
-            token_name = left
-        else:
-            token_name = left
-    else:
-        token_name = parts[0]
-
-    if not token_name:
-        return None
+    token_name = extract_primary_token_from_pool_name(pool_name)
 
     return {
         "name": token_name,
-        "pool_name": name,
+        "pool_name": pool_name,
+        "pool_address": address,
         "liquidity_usd": reserve,
         "volume_24h": volume_24h,
+        "created_at": created_at,
     }
 
 
 def fetch_gecko_chain_pools(network: str, pages: int = GECKO_PAGES) -> List[Dict[str, Any]]:
     pools: List[Dict[str, Any]] = []
+
     for page in range(1, pages + 1):
         url = GECKO_POOLS_URL.format(network=network, page=page)
         try:
@@ -747,8 +721,9 @@ def fetch_gecko_chain_pools(network: str, pages: int = GECKO_PAGES) -> List[Dict
     return pools
 
 
-def merge_gecko_records(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def merge_gecko_records_by_token(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     merged: Dict[str, Dict[str, Any]] = {}
+
     for r in records:
         key = normalize_name(r["name"])
         if not key:
@@ -800,11 +775,30 @@ def compute_flow_signal(chain: str, token: Dict[str, Any], prev_state: Dict[str,
 
 def build_chain_top3_gecko(chain_key: str, prev_state: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
     network = CHAIN_TO_GECKO[chain_key]
-    raw_records = fetch_gecko_chain_pools(network, pages=GECKO_PAGES)
-    merged = merge_gecko_records(raw_records)
+    raw_pools = fetch_gecko_chain_pools(network, pages=GECKO_PAGES)
 
-    filtered = []
-    for token in merged:
+    filtered_pools = []
+    for pool in raw_pools:
+        if is_bad_name(pool["pool_name"]):
+            continue
+        filtered_pools.append(pool)
+
+    top_liquidity_pools = sorted(
+        filtered_pools,
+        key=lambda x: x["liquidity_usd"],
+        reverse=True,
+    )[:3]
+
+    top_volume_pools = sorted(
+        filtered_pools,
+        key=lambda x: x["volume_24h"],
+        reverse=True,
+    )[:3]
+
+    merged_tokens = merge_gecko_records_by_token(filtered_pools)
+
+    token_records = []
+    for token in merged_tokens:
         if chain_key == "bsc":
             if is_bad_name(token["name"]):
                 continue
@@ -813,12 +807,13 @@ def build_chain_top3_gecko(chain_key: str, prev_state: Dict[str, Any]) -> Dict[s
                 continue
 
         signal_text, meta = compute_flow_signal(chain_key, token, prev_state)
-        filtered.append({**token, "signal": signal_text, **meta})
+        token_records.append({**token, "signal": signal_text, **meta})
 
-    top_liquidity = sorted(filtered, key=lambda x: x["liquidity_usd"], reverse=True)[:3]
-    top_volume = sorted(filtered, key=lambda x: x["volume_24h"], reverse=True)[:3]
-
-    return {"liquidity": top_liquidity, "volume": top_volume, "all": filtered}
+    return {
+        "liquidity": top_liquidity_pools,
+        "volume": top_volume_pools,
+        "all": token_records,
+    }
 
 
 def collect_dex_pairs_for_unified_ranking() -> List[Dict[str, Any]]:
@@ -861,12 +856,19 @@ def build_unified_top(
         base = pair.get("baseToken") or {}
         name = base.get("symbol") or base.get("name") or ""
 
+        if not name:
+            continue
         if is_bad_name(name):
+            continue
+        if is_excluded_token(name):
             continue
 
         key = normalize_name(name)
         liq = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
         vol = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
+
+        if liq <= 0:
+            continue
 
         if key not in merged:
             merged[key] = {"name": name, "liq": 0.0, "vol": 0.0}
@@ -884,8 +886,6 @@ def build_unified_top(
         if liq < 100_000:
             continue
 
-        score = math.log10(liq + 1) * 0.6 + math.log10(vol + 1) * 0.4
-
         prev = prev_unified.get(normalize_name(item["name"]), {})
         prev_liq = to_float(prev.get("liq"), 0.0) or 0.0
         prev_vol = to_float(prev.get("vol"), 0.0) or 0.0
@@ -893,32 +893,31 @@ def build_unified_top(
         liq_change_pct = ((liq - prev_liq) / prev_liq * 100) if prev_liq > 0 else None
         vol_change_pct = ((vol - prev_vol) / prev_vol * 100) if prev_vol > 0 else None
 
-        signals = []
+        signal = ""
         if vol >= 5_000_000 and liq >= 5_000_000:
-            signals.append("🔥 대규모 자금 유입")
+            signal = "🔥 대규모 자금 유입"
         elif vol >= 1_000_000:
-            signals.append("📈 거래량 강함")
-        if liq_change_pct is not None and liq_change_pct >= 30:
-            signals.append("💧 유동성 급증")
+            signal = "📈 거래량 강함"
+
+        if liq_change_pct is not None and liq_change_pct >= 25:
+            signal = (signal + " / 💧 유동성 증가").strip(" /")
         if vol_change_pct is not None and vol_change_pct >= 50:
-            signals.append("🚀 거래량 폭발")
+            signal = (signal + " / 🚀 거래량 급증").strip(" /")
 
         result.append({
             "name": item["name"],
-            "liq": liq,
-            "vol": vol,
-            "score": score,
-            "signal": " / ".join(signals),
+            "liquidity_usd": liq,
+            "volume_24h": vol,
+            "signal": signal,
         })
 
-    result.sort(key=lambda x: x["score"], reverse=True)
+    result.sort(key=lambda x: (x["liquidity_usd"] * 0.6 + x["volume_24h"] * 0.4), reverse=True)
     return result[:10]
 
 
 def build_message(
     projects: List[Dict[str, Any]],
     leaders: Dict[str, Dict[str, Dict[str, Any]]],
-    changes: List[str],
     prev_state: Dict[str, Any],
 ) -> Tuple[str, Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]]:
     top_projects = sorted(projects, key=lambda x: x["score"], reverse=True)[:3]
@@ -934,7 +933,7 @@ def build_message(
     unified_top = build_unified_top(polygon_top3, bsc_top3, dex_pairs, prev_state)
 
     lines = []
-    lines.append("🚀 DeFi 실전 투자 봇 v7.1")
+    lines.append("🚀 DeFi 실전 투자 봇 v7.2")
     lines.append("")
 
     lines.append("[메인 분석 TOP 3]")
@@ -958,135 +957,134 @@ def build_message(
     if real_earners:
         for idx, p in enumerate(real_earners, start=1):
             lines.append(f"{idx}) {p['name']} ({p['symbol']})")
+            lines.append(f"- 체인: {p['chain']} / 카테고리: {p['category']}")
             lines.append(f"- Revenue 30d: {fmt_num(p['revenue_30d'])}")
             lines.append(f"- Fees 30d: {fmt_num(p['fees_30d'])}")
-            lines.append(f"- TVL: {fmt_num(p['tvl'])}")
             lines.append(f"- 유동성: {fmt_num(p['liquidity_usd'])}")
+            lines.append(f"- FDV/유동성: {p['fdv_liquidity_ratio']:.2f}")
             lines.append("")
     else:
         lines.append("- 조건 충족 프로젝트 없음")
         lines.append("")
 
     lines.append("[통합 투자 TOP 10 - Gecko + Dex / 스테이블·기축 제외]")
-    if unified_top:
-        for i, t in enumerate(unified_top, 1):
-            extra = f" {t['signal']}" if t["signal"] else ""
-            lines.append(f"{i}) {t['name']} / 유동성 {fmt_num(t['liq'])} / 거래량 {fmt_num(t['vol'])}{extra}")
-    else:
-        lines.append("- 후보 없음")
-
+    for idx, item in enumerate(unified_top, start=1):
+        tail = f" {item['signal']}" if item.get("signal") else ""
+        lines.append(
+            f"{idx}) {item['name']} / 유동성 {fmt_num(item['liquidity_usd'])} / 거래량 {fmt_num(item['volume_24h'])}{tail}"
+        )
     lines.append("")
-    lines.append("[Polygon 유동성 TOP 3 - GeckoTerminal 전체풀 기반]")
-    for i, p in enumerate(polygon_top3["liquidity"], start=1):
-        lines.append(f"{i}) {p['name']} / 유동성 {fmt_num(p['liquidity_usd'])} / 거래량 {fmt_num(p['volume_24h'])}")
 
+    lines.append("[Polygon 유동성 TOP 3 - GeckoTerminal 풀 기준]")
+    for idx, item in enumerate(polygon_top3["liquidity"], start=1):
+        lines.append(
+            f"{idx}) {item['pool_name']} / 유동성 {fmt_num(item['liquidity_usd'])} / 거래량 {fmt_num(item['volume_24h'])}"
+        )
     lines.append("")
-    lines.append("[Polygon 거래량 TOP 3 - GeckoTerminal 전체풀 기반]")
-    for i, p in enumerate(polygon_top3["volume"], start=1):
-        extra = f" {p['signal']}" if p["signal"] else ""
-        lines.append(f"{i}) {p['name']} / 거래량 {fmt_num(p['volume_24h'])} / 유동성 {fmt_num(p['liquidity_usd'])}{extra}")
 
+    lines.append("[Polygon 거래량 TOP 3 - GeckoTerminal 풀 기준]")
+    for idx, item in enumerate(polygon_top3["volume"], start=1):
+        lines.append(
+            f"{idx}) {item['pool_name']} / 거래량 {fmt_num(item['volume_24h'])} / 유동성 {fmt_num(item['liquidity_usd'])}"
+        )
     lines.append("")
-    lines.append("[BSC 유동성 TOP 3 - GeckoTerminal 전체풀 기반]")
-    for i, p in enumerate(bsc_top3["liquidity"], start=1):
-        lines.append(f"{i}) {p['name']} / 유동성 {fmt_num(p['liquidity_usd'])} / 거래량 {fmt_num(p['volume_24h'])}")
 
+    lines.append("[BSC 유동성 TOP 3 - GeckoTerminal 풀 기준]")
+    for idx, item in enumerate(bsc_top3["liquidity"], start=1):
+        lines.append(
+            f"{idx}) {item['pool_name']} / 유동성 {fmt_num(item['liquidity_usd'])} / 거래량 {fmt_num(item['volume_24h'])}"
+        )
     lines.append("")
-    lines.append("[BSC 거래량 TOP 3 - GeckoTerminal 전체풀 기반]")
-    for i, p in enumerate(bsc_top3["volume"], start=1):
-        extra = f" {p['signal']}" if p["signal"] else ""
-        lines.append(f"{i}) {p['name']} / 거래량 {fmt_num(p['volume_24h'])} / 유동성 {fmt_num(p['liquidity_usd'])}{extra}")
 
+    lines.append("[BSC 거래량 TOP 3 - GeckoTerminal 풀 기준]")
+    for idx, item in enumerate(bsc_top3["volume"], start=1):
+        lines.append(
+            f"{idx}) {item['pool_name']} / 거래량 {fmt_num(item['volume_24h'])} / 유동성 {fmt_num(item['liquidity_usd'])}"
+        )
     lines.append("")
+
     lines.append("[체인별 유동성 1위]")
     for chain in ["ethereum", "arbitrum", "base", "bsc", "polygon"]:
-        data = leaders.get(chain, {})
-        if "liquidity" in data:
-            p = data["liquidity"]
-            lines.append(f"- {chain}: {p['name']} / 유동성 {fmt_num(p['liquidity_usd'])}")
+        leader = leaders.get(chain, {}).get("liquidity")
+        if leader:
+            lines.append(f"- {chain}: {leader['name']} / 유동성 {fmt_num(leader['liquidity_usd'])}")
         else:
             lines.append(f"- {chain}: 기본 필터 통과 프로젝트 없음")
-
     lines.append("")
+
     lines.append("[체인별 거래량 1위]")
     for chain in ["ethereum", "arbitrum", "base", "bsc", "polygon"]:
-        data = leaders.get(chain, {})
-        if "volume" in data:
-            p = data["volume"]
-            lines.append(f"- {chain}: {p['name']} / 24h 거래량 {fmt_num(p['volume_24h'])}")
+        leader = leaders.get(chain, {}).get("volume")
+        if leader:
+            lines.append(f"- {chain}: {leader['name']} / 24h 거래량 {fmt_num(leader['volume_24h'])}")
         else:
             lines.append(f"- {chain}: 기본 필터 통과 프로젝트 없음")
-
     lines.append("")
-    lines.append("[전 실행 대비 변화]")
-    if changes:
-        lines.extend(changes)
-    else:
-        lines.append("- 비교 가능한 이전 데이터가 없습니다.")
 
-    return "\n".join(lines), polygon_top3, bsc_top3, unified_top
+    msg = "\n".join(lines)
+
+    next_gecko_snapshot = {
+        "polygon": {
+            normalize_name(x["name"]): {
+                "liquidity_usd": x["liquidity_usd"],
+                "volume_24h": x["volume_24h"],
+            }
+            for x in polygon_top3["all"]
+        },
+        "bsc": {
+            normalize_name(x["name"]): {
+                "liquidity_usd": x["liquidity_usd"],
+                "volume_24h": x["volume_24h"],
+            }
+            for x in bsc_top3["all"]
+        },
+    }
+
+    next_unified = {
+        normalize_name(x["name"]): {
+            "liq": x["liquidity_usd"],
+            "vol": x["volume_24h"],
+        }
+        for x in unified_top
+    }
+
+    return msg, next_gecko_snapshot, next_unified, unified_top
 
 
 def main() -> None:
     prev_state = load_state()
+
     protocols = filter_llama_protocols(get_llama_protocols())
+    analyzed_projects: List[Dict[str, Any]] = []
 
-    projects = []
-    for protocol in protocols[:40]:
-        best_pair = choose_best_pair_for_protocol(protocol)
-        if not best_pair:
+    for protocol in protocols:
+        try:
+            pair = choose_best_pair_for_protocol(protocol)
+            if not pair:
+                continue
+            if not passes_profitability_filter(protocol, pair):
+                continue
+            analyzed = analyze_project(protocol, pair)
+            analyzed_projects.append(analyzed)
+        except Exception:
             continue
-        if not passes_profitability_filter(protocol, best_pair):
-            continue
-        projects.append(analyze_project(protocol, best_pair))
 
-    leaders = build_chain_leaders(projects)
-    changes = compare_leaders(prev_state, leaders)
-    message, polygon_top3, bsc_top3, unified_top = build_message(projects, leaders, changes, prev_state)
+    leaders = build_chain_leaders(analyzed_projects)
+
+    message, gecko_snapshots, unified_flow, top_projects = build_message(
+        analyzed_projects,
+        leaders,
+        prev_state,
+    )
+
     send_telegram_message(message)
 
     new_state = {
-        "chain_leaders": {
-            chain: {
-                k: {
-                    "name": v["name"],
-                    "liquidity_usd": v["liquidity_usd"],
-                    "volume_24h": v["volume_24h"],
-                }
-                for k, v in data.items()
-            }
-            for chain, data in leaders.items()
-        },
-        "top_projects": [
-            {"name": p["name"], "score": p["score"], "chain": p["chain"]}
-            for p in sorted(projects, key=lambda x: x["score"], reverse=True)[:3]
-        ],
-        "gecko_chain_snapshots": {
-            "polygon": {
-                normalize_name(x["name"]): {
-                    "name": x["name"],
-                    "liquidity_usd": x["liquidity_usd"],
-                    "volume_24h": x["volume_24h"],
-                }
-                for x in polygon_top3["all"][:100]
-            },
-            "bsc": {
-                normalize_name(x["name"]): {
-                    "name": x["name"],
-                    "liquidity_usd": x["liquidity_usd"],
-                    "volume_24h": x["volume_24h"],
-                }
-                for x in bsc_top3["all"][:100]
-            },
-        },
-        "unified_flow": {
-            normalize_name(x["name"]): {
-                "name": x["name"],
-                "liq": x["liq"],
-                "vol": x["vol"],
-            }
-            for x in unified_top[:50]
-        },
+        "chain_leaders": leaders,
+        "top_projects": top_projects,
+        "gecko_chain_snapshots": gecko_snapshots,
+        "security_snapshots": prev_state.get("security_snapshots", {}),
+        "unified_flow": unified_flow,
     }
     save_state(new_state)
 
