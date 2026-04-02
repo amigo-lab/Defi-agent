@@ -4,36 +4,36 @@
       "liquidity": {
         "name": "Spark Savings",
         "liquidity_usd": 50016285.7,
-        "volume_24h": 30928911.36
+        "volume_24h": 30139460.6
       },
       "volume": {
         "name": "Spark Savings",
         "liquidity_usd": 50016285.7,
-        "volume_24h": 30928911.36
+        "volume_24h": 30139460.6
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
         "liquidity_usd": 780073.62,
-        "volume_24h": 100948.67
+        "volume_24h": 98298.68
       },
       "volume": {
         "name": "Pendle",
         "liquidity_usd": 780073.62,
-        "volume_24h": 100948.67
+        "volume_24h": 98298.68
       }
     },
     "base": {
       "liquidity": {
         "name": "Centrifuge Protocol",
-        "liquidity_usd": 1999851.77,
-        "volume_24h": 101204.73
+        "liquidity_usd": 865264.25,
+        "volume_24h": 3103205.55
       },
       "volume": {
         "name": "Centrifuge Protocol",
-        "liquidity_usd": 1999851.77,
-        "volume_24h": 101204.73
+        "liquidity_usd": 865264.25,
+        "volume_24h": 3103205.55
       }
     },
     "bsc": {},
@@ -41,18 +41,18 @@
   },
   "top_projects": [
     {
-      "name": "Ondo Yield Assets",
-      "score": 92,
-      "chain": "ethereum"
-    },
-    {
       "name": "Euler V2",
-      "score": 83,
+      "score": 61,
       "chain": "ethereum"
     },
     {
       "name": "Dolomite",
-      "score": 83,
+      "score": 61,
+      "chain": "ethereum"
+    },
+    {
+      "name": "Tether Gold",
+      "score": 58,
       "chain": "ethereum"
     }
   ]
