@@ -807,13 +807,13 @@ def build_chain_top3_gecko(chain_key: str, prev_state: Dict[str, Any]) -> Dict[s
 
     filtered = []
     for token in merged:
-        # 🔥 BSC만 필터 완화
-    if chain_key == "bsc":
-    if is_bad_name(token["name"]):
-        continue
-    else:
-    if not is_valid_token(token["name"]):
-        continue
+        if chain_key == "bsc":
+            if is_bad_name(token["name"]):
+                continue
+        else:
+            if not is_valid_token(token["name"]):
+                continue
+
         signal_text, meta = compute_flow_signal(chain_key, token, prev_state)
         filtered.append({**token, "signal": signal_text, **meta})
 
