@@ -807,8 +807,13 @@ def build_chain_top3_gecko(chain_key: str, prev_state: Dict[str, Any]) -> Dict[s
 
     filtered = []
     for token in merged:
-        if not is_valid_token(token["name"]):
-            continue
+        # 🔥 BSC만 필터 완화
+    if chain_key == "bsc":
+    if is_bad_name(token["name"]):
+        continue
+    else:
+    if not is_valid_token(token["name"]):
+        continue
         signal_text, meta = compute_flow_signal(chain_key, token, prev_state)
         filtered.append({**token, "signal": signal_text, **meta})
 
@@ -844,8 +849,8 @@ def build_unified_top(
     for chain_data in [polygon_data, bsc_data]:
         for token in chain_data["all"]:
             name = token["name"]
-            if not is_valid_token(name):
-                continue
+            if is_bad_name(name):
+            continue
 
             key = normalize_name(name)
             if key not in merged:
@@ -858,8 +863,8 @@ def build_unified_top(
         base = pair.get("baseToken") or {}
         name = base.get("symbol") or base.get("name") or ""
 
-        if not is_valid_token(name):
-            continue
+        if is_bad_name(name):
+        continue
 
         key = normalize_name(name)
         liq = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
