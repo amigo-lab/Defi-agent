@@ -8,20 +8,20 @@
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 715759.63,
-        "volume_24h": 639697.54
+        "liquidity_usd": 715333.29,
+        "volume_24h": 640509.69
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
         "liquidity_usd": 777691.71,
-        "volume_24h": 84837.8
+        "volume_24h": 84291.03
       },
       "volume": {
         "name": "Pendle",
         "liquidity_usd": 777691.71,
-        "volume_24h": 84837.8
+        "volume_24h": 84291.03
       }
     },
     "base": {},
@@ -31,19 +31,18 @@
   "top_projects": [
     {
       "name": "SolvBTC",
-      "score": 39,
+      "score": 42,
       "chain": "ethereum"
     },
     {
       "name": "Dolomite",
-      "score": 37,
+      "score": 40,
       "chain": "ethereum"
     },
     {
       "name": "Euler V2",
-      "score": 37,
+      "score": 40,
       "chain": "ethereum"
     }
-  ],
-  "prev_state_loaded": true
+  ]
 }
