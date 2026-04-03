@@ -3,25 +3,25 @@
     "ethereum": {
       "liquidity": {
         "name": "SolvBTC",
-        "liquidity_usd": 6556084.71,
-        "volume_24h": 338618.29
+        "liquidity_usd": 6556094.53,
+        "volume_24h": 339614.35
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 722751.21,
-        "volume_24h": 637662.04
+        "liquidity_usd": 719087.09,
+        "volume_24h": 638539.31
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 773707.54,
-        "volume_24h": 84193.36
+        "liquidity_usd": 777691.71,
+        "volume_24h": 84837.8
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 773707.54,
-        "volume_24h": 84193.36
+        "liquidity_usd": 777691.71,
+        "volume_24h": 84837.8
       }
     },
     "base": {},
@@ -44,5 +44,6 @@
       "score": 40,
       "chain": "ethereum"
     }
-  ]
+  ],
+  "prev_state_loaded": true
 }
