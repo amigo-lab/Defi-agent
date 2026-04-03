@@ -2,47 +2,58 @@
   "chain_leaders": {
     "ethereum": {
       "liquidity": {
-        "name": "SolvBTC",
-        "liquidity_usd": 6556094.53,
-        "volume_24h": 339614.35
+        "name": "Convex Finance",
+        "liquidity_usd": 4934050.08,
+        "volume_24h": 99984.95
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 715333.29,
-        "volume_24h": 640509.69
+        "liquidity_usd": 729523.29,
+        "volume_24h": 436852.18
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 777691.71,
-        "volume_24h": 84291.03
+        "liquidity_usd": 783273.65,
+        "volume_24h": 89663.88
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 777691.71,
-        "volume_24h": 84291.03
+        "liquidity_usd": 783273.65,
+        "volume_24h": 89663.88
       }
     },
-    "base": {},
+    "base": {
+      "liquidity": {
+        "name": "Aave V3",
+        "liquidity_usd": 878247.75,
+        "volume_24h": 55752.75
+      },
+      "volume": {
+        "name": "Aave V3",
+        "liquidity_usd": 878247.75,
+        "volume_24h": 55752.75
+      }
+    },
     "bsc": {},
     "polygon": {}
   },
   "top_projects": [
     {
-      "name": "SolvBTC",
-      "score": 42,
-      "chain": "ethereum"
-    },
-    {
-      "name": "Dolomite",
-      "score": 40,
-      "chain": "ethereum"
+      "name": "Aave V3",
+      "score": 52,
+      "chain": "base"
     },
     {
       "name": "Euler V2",
       "score": 40,
       "chain": "ethereum"
+    },
+    {
+      "name": "Pendle",
+      "score": 0,
+      "chain": "arbitrum"
     }
   ]
 }
