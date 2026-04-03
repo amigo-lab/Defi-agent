@@ -8,6 +8,7 @@ TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
 LLAMA_PROTOCOLS_URL = "https://api.llama.fi/protocols"
 DEX_SEARCH_URL = "https://api.dexscreener.com/latest/dex/search"
+GECKO_API_BASE = "https://api.geckoterminal.com/api/v2"
 HONEYPOT_CHECK_URL = "https://api.honeypot.is/v2/IsHoneypot"
 HONEYPOT_TOP_HOLDERS_URL = "https://api.honeypot.is/v2/TopHolders"
 
@@ -43,6 +44,11 @@ CHAIN_NAME_TO_ID = {
     "base": 8453,
 }
 
+GECKO_NETWORK_IDS = {
+    "polygon": "polygon_pos",
+    "bsc": "bsc",
+}
+
 ALLOWED_CATEGORIES = {
     "Dexes",
     "Lending",
@@ -57,35 +63,14 @@ BAD_KEYWORDS = [
     "doge", "inu", "baby", "banana", "pepe", "elon", "cat", "shib", "meme"
 ]
 
-# 별도 모니터링 검색어
-# "체인 전체 API"가 없어서 검색 기반으로 최대한 폭넓게 수집
-BSC_SEARCH_TERMS = [
-    "WBNB", "BNB", "BTCB", "ETH", "USDT", "USDC", "FDUSD", "BUSD",
-    "PancakeSwap", "THENA", "Venus", "Lista", "Biswap", "Wombat", "Aster"
-]
-
-POLYGON_SEARCH_TERMS = [
-    "LGNS", "POL", "MATIC", "WPOL", "WMATIC", "WETH", "WBTC",
-    "USDT", "USDC", "DAI",
-    "QuickSwap", "Uniswap", "Aave", "Balancer", "Curve", "Sushi", "Kyber"
-]
-
-# 별도 모니터링에서 제외할 기축/스테이블 단독 위주 토큰
-EXCLUDED_BASE_SYMBOLS = {
-    "USDT", "USDC", "DAI", "BUSD", "FDUSD", "TUSD", "USDP", "USDD",
-    "USDC.E", "USDT.E", "MAI",
+EXCLUDED_MAJOR_OR_STABLE_SYMBOLS = {
+    "USDT", "USDC", "USDC.E", "USDT.E", "USDT0", "DAI", "BUSD", "FDUSD", "TUSD",
+    "USDP", "USDD", "MAI",
     "BTC", "WBTC", "BTCB",
     "ETH", "WETH",
     "BNB", "WBNB",
     "MATIC", "WMATIC", "POL", "WPOL",
 }
-
-# 완전 제외는 아니고 "둘 다 제외 대상이면 제외"
-# 예: BTCB/USDT, USDC/DAI 같은 건 제외
-# 예: LGNS/DAI, LINK/USDC 같은 건 허용
-def is_excluded_pair(base_symbol: str, quote_symbol: str) -> bool:
-    return base_symbol in EXCLUDED_BASE_SYMBOLS and quote_symbol in EXCLUDED_BASE_SYMBOLS
-
 
 REAL_EARNER_MIN_FEES_30D = 50_000
 REAL_EARNER_MIN_REVENUE_30D = 10_000
@@ -93,9 +78,11 @@ REAL_EARNER_MIN_LIQUIDITY = 150_000
 REAL_EARNER_MAX_FDV_LIQ_RATIO = 30
 
 REQUEST_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; DeFiAgentBot/8.0)",
+    "User-Agent": "Mozilla/5.0 (compatible; DeFiAgentBot/9.0)",
     "Accept": "application/json",
 }
+
+MONITOR_GECKO_PAGES = 2
 
 
 def http_get_json(url: str, params: Optional[Dict[str, Any]] = None, timeout: int = 30) -> Any:
@@ -187,14 +174,6 @@ def get_pair_uid(pair: Dict[str, Any]) -> str:
     return f"{chain_id}:{token_symbol(base)}:{token_symbol(quote)}"
 
 
-def build_pair_label(pair: Dict[str, Any]) -> str:
-    base = pair.get("baseToken") or {}
-    quote = pair.get("quoteToken") or {}
-    base_symbol = token_symbol(base) or token_name(base) or "?"
-    quote_symbol = token_symbol(quote) or token_name(quote) or "?"
-    return f"{base_symbol} / {quote_symbol}"
-
-
 def get_llama_protocols() -> List[Dict[str, Any]]:
     data = http_get_json(LLAMA_PROTOCOLS_URL, timeout=30)
     if not isinstance(data, list):
@@ -208,8 +187,6 @@ def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
         return []
     try:
         data = http_get_json(DEX_SEARCH_URL, params={"q": query}, timeout=30)
-        if not isinstance(data, dict):
-            return []
         return data.get("pairs", []) or []
     except Exception:
         return []
@@ -456,10 +433,15 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
     tvl = to_float(protocol.get("tvl"), 0.0) or 0.0
     category = protocol.get("category") or "-"
     chain_id = (pair.get("chainId") or "").lower()
+    dex_id = pair.get("dexId") or "-"
     pair_url = pair.get("url") or "-"
 
     metrics = get_fee_revenue_metrics(protocol)
+    fees_24h = metrics["fees_24h"]
+    fees_7d = metrics["fees_7d"]
     fees_30d = metrics["fees_30d"]
+    revenue_24h = metrics["revenue_24h"]
+    revenue_7d = metrics["revenue_7d"]
     revenue_30d = metrics["revenue_30d"]
 
     security = extract_security_signals(pair)
@@ -467,6 +449,8 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
     fdv_liquidity_ratio = (fdv / liquidity_usd) if liquidity_usd > 0 and fdv > 0 else 0.0
     volume_liquidity_ratio = (volume_24h / liquidity_usd) if liquidity_usd > 0 else 0.0
     tvl_liquidity_ratio = (tvl / liquidity_usd) if liquidity_usd > 0 and tvl > 0 else 0.0
+    fee_tvl_ratio_30d = (fees_30d / tvl) if fees_30d and tvl > 0 else None
+    revenue_tvl_ratio_30d = (revenue_30d / tvl) if revenue_30d and tvl > 0 else None
 
     score = 100
     reasons = []
@@ -552,6 +536,26 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         score -= 14
         reasons.append("Revenue 30d가 매우 약함")
 
+    if fee_tvl_ratio_30d is not None:
+        if fee_tvl_ratio_30d >= 0.03:
+            score += 6
+            reasons.append("TVL 대비 Fees 효율 높음")
+        elif fee_tvl_ratio_30d < 0.005:
+            score -= 6
+            reasons.append("TVL 대비 Fees 효율 낮음")
+
+    if revenue_tvl_ratio_30d is not None:
+        if revenue_tvl_ratio_30d >= 0.01:
+            score += 6
+            reasons.append("TVL 대비 Revenue 효율 높음")
+        elif revenue_tvl_ratio_30d < 0.002:
+            score -= 6
+            reasons.append("TVL 대비 Revenue 효율 낮음")
+
+    if category in {"Dexes", "Lending", "Derivatives", "Bridge"}:
+        score += 3
+        reasons.append("주요 DeFi 카테고리")
+
     if security["is_honeypot"] is True:
         score -= 40
         reasons.append("허니팟 의심")
@@ -595,14 +599,21 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         "fdv_liquidity_ratio": fdv_liquidity_ratio,
         "volume_liquidity_ratio": volume_liquidity_ratio,
         "tvl_liquidity_ratio": tvl_liquidity_ratio,
+        "fees_24h": fees_24h,
+        "fees_7d": fees_7d,
         "fees_30d": fees_30d,
+        "revenue_24h": revenue_24h,
+        "revenue_7d": revenue_7d,
         "revenue_30d": revenue_30d,
+        "fee_tvl_ratio_30d": fee_tvl_ratio_30d,
+        "revenue_tvl_ratio_30d": revenue_tvl_ratio_30d,
+        "dex_id": dex_id,
+        "pair_url": pair_url,
         "score": max(score, 0),
         "grade": grade,
         "verdict": verdict,
         "reasons": reasons[:8],
         "security": security,
-        "pair_url": pair_url,
     }
 
 
@@ -648,18 +659,117 @@ def build_chain_leaders(projects: List[Dict[str, Any]]) -> Dict[str, Dict[str, D
     return leaders
 
 
-def monitor_pair_candidate(chain_name: str, pair: Dict[str, Any]) -> bool:
-    pair_chain = (pair.get("chainId") or "").lower()
-    if pair_chain != chain_name:
-        return False
+def compare_leaders(prev_state: Dict[str, Any], current_leaders: Dict[str, Dict[str, Dict[str, Any]]]) -> List[str]:
+    messages = []
+    prev_leaders = prev_state.get("chain_leaders", {})
 
-    base = pair.get("baseToken") or {}
-    quote = pair.get("quoteToken") or {}
+    for chain in ["ethereum", "arbitrum", "base", "bsc", "polygon"]:
+        data = current_leaders.get(chain, {})
+        prev_chain = prev_leaders.get(chain, {})
 
-    base_name = token_name(base)
-    quote_name = token_name(quote)
-    base_symbol = token_symbol(base)
-    quote_symbol = token_symbol(quote)
+        current_liq_name = data.get("liquidity", {}).get("name", "-")
+        prev_liq_name = prev_chain.get("liquidity", {}).get("name", "-")
+        liq_status = "유지" if current_liq_name == prev_liq_name else f"변경 ({prev_liq_name} → {current_liq_name})"
+
+        current_vol_name = data.get("volume", {}).get("name", "-")
+        prev_vol_name = prev_chain.get("volume", {}).get("name", "-")
+        vol_status = "유지" if current_vol_name == prev_vol_name else f"변경 ({prev_vol_name} → {current_vol_name})"
+
+        messages.append(f"- {chain} 유동성 1위: {liq_status}")
+        messages.append(f"- {chain} 거래량 1위: {vol_status}")
+
+    return messages
+
+
+def is_excluded_pair(base_symbol: str, quote_symbol: str) -> bool:
+    return (
+        base_symbol in EXCLUDED_MAJOR_OR_STABLE_SYMBOLS
+        and quote_symbol in EXCLUDED_MAJOR_OR_STABLE_SYMBOLS
+    )
+
+
+def gecko_build_included_map(included: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    result = {}
+    for item in included or []:
+        item_id = item.get("id")
+        if item_id:
+            result[item_id] = item
+    return result
+
+
+def gecko_fetch_top_pools_page(network_id: str, page: int = 1, order: Optional[str] = None) -> List[Dict[str, Any]]:
+    params: Dict[str, Any] = {
+        "page": page,
+        "include": "base_token,quote_token,dex",
+    }
+    if order:
+        params["order"] = order
+
+    url = f"{GECKO_API_BASE}/networks/{network_id}/pools"
+    data = http_get_json(url, params=params, timeout=30)
+
+    if not isinstance(data, dict):
+        return []
+
+    raw_pools = data.get("data", []) or []
+    included_map = gecko_build_included_map(data.get("included", []) or [])
+    parsed = []
+
+    for pool in raw_pools:
+        attrs = pool.get("attributes", {}) or {}
+        rel = pool.get("relationships", {}) or {}
+
+        base_rel = ((rel.get("base_token") or {}).get("data") or {}).get("id")
+        quote_rel = ((rel.get("quote_token") or {}).get("data") or {}).get("id")
+        dex_rel = ((rel.get("dex") or {}).get("data") or {}).get("id")
+
+        base_item = included_map.get(base_rel, {})
+        quote_item = included_map.get(quote_rel, {})
+        dex_item = included_map.get(dex_rel, {})
+
+        base_attrs = base_item.get("attributes", {}) or {}
+        quote_attrs = quote_item.get("attributes", {}) or {}
+        dex_attrs = dex_item.get("attributes", {}) or {}
+
+        base_symbol = (base_attrs.get("symbol") or "").upper()
+        quote_symbol = (quote_attrs.get("symbol") or "").upper()
+        base_name = base_attrs.get("name") or base_symbol or "?"
+        quote_name = quote_attrs.get("name") or quote_symbol or "?"
+        dex_name = dex_attrs.get("name") or dex_rel or "-"
+
+        pool_address = (attrs.get("address") or "").lower()
+        reserve_in_usd = to_float(attrs.get("reserve_in_usd"), 0.0) or 0.0
+        volume_h24 = to_float((attrs.get("volume_usd") or {}).get("h24"), 0.0) or 0.0
+        txns_h24 = (attrs.get("transactions") or {}).get("h24", {}) or {}
+        buys_h24 = int(to_float(txns_h24.get("buys"), 0) or 0)
+        sells_h24 = int(to_float(txns_h24.get("sells"), 0) or 0)
+
+        parsed.append({
+            "pool_address": pool_address,
+            "label": attrs.get("name") or f"{base_symbol} / {quote_symbol}",
+            "base_symbol": base_symbol,
+            "quote_symbol": quote_symbol,
+            "base_name": base_name,
+            "quote_name": quote_name,
+            "liquidity_usd": reserve_in_usd,
+            "volume_24h": volume_h24,
+            "fdv": to_float(attrs.get("fdv_usd"), 0.0) or 0.0,
+            "market_cap": to_float(attrs.get("market_cap_usd"), 0.0) or 0.0,
+            "price_usd": to_float(attrs.get("base_token_price_usd"), None),
+            "pair_url": f"https://www.geckoterminal.com/{network_id}/pools/{pool_address}" if pool_address else "-",
+            "dex_id": str(dex_name),
+            "buys_h24": buys_h24,
+            "sells_h24": sells_h24,
+        })
+
+    return parsed
+
+
+def gecko_monitor_candidate(pool: Dict[str, Any]) -> bool:
+    base_name = pool.get("base_name") or ""
+    quote_name = pool.get("quote_name") or ""
+    base_symbol = (pool.get("base_symbol") or "").upper()
+    quote_symbol = (pool.get("quote_symbol") or "").upper()
 
     if is_bad_name(base_name) or is_bad_name(quote_name):
         return False
@@ -667,62 +777,63 @@ def monitor_pair_candidate(chain_name: str, pair: Dict[str, Any]) -> bool:
     if is_excluded_pair(base_symbol, quote_symbol):
         return False
 
-    liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
-    volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
+    liquidity_usd = to_float(pool.get("liquidity_usd"), 0.0) or 0.0
+    volume_24h = to_float(pool.get("volume_24h"), 0.0) or 0.0
+    buys_h24 = int(pool.get("buys_h24") or 0)
+    sells_h24 = int(pool.get("sells_h24") or 0)
 
     if liquidity_usd < 50_000:
         return False
     if volume_24h < 20_000:
         return False
+    if (buys_h24 + sells_h24) < 20:
+        return False
 
     return True
 
 
-def build_chain_top3_from_search(chain_name: str, search_terms: List[str]) -> Dict[str, List[Dict[str, Any]]]:
-    pairs_map: Dict[str, Dict[str, Any]] = {}
+def build_chain_top3_from_gecko(chain_name: str) -> Dict[str, List[Dict[str, Any]]]:
+    network_id = GECKO_NETWORK_IDS.get(chain_name)
+    if not network_id:
+        return {"liquidity": [], "volume": []}
 
-    for term in search_terms:
-        pairs = search_dex_pairs(term)
+    pools_map: Dict[str, Dict[str, Any]] = {}
 
-        for pair in pairs:
-            if not monitor_pair_candidate(chain_name, pair):
-                continue
+    for page in range(1, MONITOR_GECKO_PAGES + 1):
+        for order in [None, "h24_volume_usd_desc"]:
+            try:
+                page_pools = gecko_fetch_top_pools_page(network_id, page=page, order=order)
+            except Exception:
+                page_pools = []
 
-            uid = get_pair_uid(pair)
-            liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
-            volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
+            for pool in page_pools:
+                if not gecko_monitor_candidate(pool):
+                    continue
 
-            row = {
-                "label": build_pair_label(pair),
-                "name": build_pair_label(pair),
-                "symbol": pair.get("dexId") or "-",
-                "liquidity_usd": liquidity_usd,
-                "volume_24h": volume_24h,
-                "fdv": to_float(pair.get("fdv"), 0.0) or 0.0,
-                "market_cap": to_float(pair.get("marketCap"), 0.0) or 0.0,
-                "price_usd": to_float(pair.get("priceUsd"), None),
-                "pair_url": pair.get("url") or "-",
-                "dex_id": pair.get("dexId") or "-",
-            }
+                uid = pool.get("pool_address") or pool.get("pair_url")
+                if not uid:
+                    continue
 
-            prev = pairs_map.get(uid)
-            if prev is None:
-                pairs_map[uid] = row
-            else:
-                # 같은 pairAddress면 더 큰 수치 보존
-                if liquidity_usd > prev["liquidity_usd"] or volume_24h > prev["volume_24h"]:
-                    pairs_map[uid] = row
+                prev = pools_map.get(uid)
+                if prev is None:
+                    pools_map[uid] = pool
+                else:
+                    if (
+                        pool["liquidity_usd"] > prev["liquidity_usd"]
+                        or pool["volume_24h"] > prev["volume_24h"]
+                    ):
+                        pools_map[uid] = pool
 
-    projects = list(pairs_map.values())
+    pools = list(pools_map.values())
 
     top_liquidity = sorted(
-        projects,
+        pools,
         key=lambda x: (x["liquidity_usd"], x["volume_24h"]),
         reverse=True
     )[:3]
 
     top_volume = sorted(
-        projects,
+        pools,
         key=lambda x: (x["volume_24h"], x["liquidity_usd"]),
         reverse=True
     )[:3]
@@ -731,7 +842,7 @@ def build_chain_top3_from_search(chain_name: str, search_terms: List[str]) -> Di
 
 
 def format_monitor_line(rank: int, pool: Dict[str, Any], mode: str) -> str:
-    label = pool.get("label") or pool.get("name") or "-"
+    label = pool.get("label") or "-"
     dex_id = pool.get("dex_id") or "-"
     pair_url = pool.get("pair_url") or "-"
 
@@ -740,14 +851,14 @@ def format_monitor_line(rank: int, pool: Dict[str, Any], mode: str) -> str:
             f"{rank}) {label} / DEX {dex_id} / 유동성 {fmt_num(pool['liquidity_usd'])} "
             f"/ 거래량 {fmt_num(pool['volume_24h'])} / 링크 {pair_url}"
         )
-    else:
-        return (
-            f"{rank}) {label} / DEX {dex_id} / 거래량 {fmt_num(pool['volume_24h'])} "
-            f"/ 유동성 {fmt_num(pool['liquidity_usd'])} / 링크 {pair_url}"
-        )
+
+    return (
+        f"{rank}) {label} / DEX {dex_id} / 거래량 {fmt_num(pool['volume_24h'])} "
+        f"/ 유동성 {fmt_num(pool['liquidity_usd'])} / 링크 {pair_url}"
+    )
 
 
-def build_message(projects: List[Dict[str, Any]], leaders: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
+def build_message(projects: List[Dict[str, Any]], leaders: Dict[str, Dict[str, Dict[str, Any]]], changes: List[str]) -> str:
     safe_projects = [x for x in projects if x["grade"] in {"관심", "관찰"}]
     top_projects = sorted(safe_projects, key=lambda x: x["score"], reverse=True)[:3]
     real_earners = sorted(
@@ -825,8 +936,8 @@ def build_message(projects: List[Dict[str, Any]], leaders: Dict[str, Dict[str, D
         else:
             lines.append(f"- {chain}: 기본 필터 통과 프로젝트 없음")
 
-    bsc_top3 = build_chain_top3_from_search("bsc", BSC_SEARCH_TERMS)
-    polygon_top3 = build_chain_top3_from_search("polygon", POLYGON_SEARCH_TERMS)
+    bsc_top3 = build_chain_top3_from_gecko("bsc")
+    polygon_top3 = build_chain_top3_from_gecko("polygon")
 
     lines.append("")
     lines.append("[BSC 별도 모니터링 - 유동성 TOP 3]")
@@ -860,6 +971,13 @@ def build_message(projects: List[Dict[str, Any]], leaders: Dict[str, Dict[str, D
     else:
         lines.append("- 후보 없음")
 
+    lines.append("")
+    lines.append("[전 실행 대비 변화]")
+    if changes:
+        lines.extend(changes)
+    else:
+        lines.append("- 비교 가능한 이전 데이터가 없습니다.")
+
     return "\n".join(lines)
 
 
@@ -877,7 +995,9 @@ def main() -> None:
         projects.append(analyze_project(protocol, best_pair))
 
     leaders = build_chain_leaders(projects)
-    message = build_message(projects, leaders)
+    changes = compare_leaders(prev_state, leaders)
+
+    message = build_message(projects, leaders, changes)
     send_telegram_message(message)
 
     new_state = {
@@ -896,7 +1016,6 @@ def main() -> None:
             {"name": p["name"], "score": p["score"], "chain": p["chain"]}
             for p in sorted(projects, key=lambda x: x["score"], reverse=True)[:3]
         ],
-        "prev_state_loaded": bool(prev_state),
     }
     save_state(new_state)
 
