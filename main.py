@@ -1,24 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-🚀 DeFi 실전 투자 봇 v8.3
+🚀 DeFi 실전 투자 봇 v8.4
+- GitHub Actions용 1회 실행 구조
+- schedule 라이브러리 제거
 - 스테이블/기축/래핑 자산 강력 제외
-- 풀에서 실제 투자 대상 토큰(focus token) 재추출
+- 풀에서 실제 투자 대상 토큰(project_symbol) 재추출
 - BTCB, WBNB, WETH, FRAX, USDT, USDC, DAI 반복 노출 방지
-- 중복 제거 강화
-- 오전 9시 자동 전송 스케줄 포함
+- Polygon / BSC 순위 정제
 """
 
+import os
 import re
 import time
 import requests
-import schedule
-from collections import defaultdict
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 # =========================================================
 # 텔레그램 설정
 # =========================================================
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN"
-TELEGRAM_CHAT_ID = "YOUR_CHAT_ID"
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 # =========================================================
 # 기본 설정
@@ -30,7 +32,7 @@ REQUEST_SLEEP = 0.8
 TARGET_CHAINS = ["ethereum", "arbitrum", "base", "bsc", "polygon"]
 
 USER_AGENT = {
-    "User-Agent": "Mozilla/5.0 (compatible; DeFi-Agent-Bot/8.3)"
+    "User-Agent": "Mozilla/5.0 (compatible; DeFi-Agent-Bot/8.4)"
 }
 
 MIN_LIQUIDITY_USD = 150_000
@@ -69,6 +71,9 @@ EXCLUDED_NAME_KEYWORDS = [
 # =========================================================
 def debug(msg):
     print(f"[DEBUG] {msg}")
+
+def now_kst():
+    return datetime.now(ZoneInfo("Asia/Seoul"))
 
 def safe_float(v, default=0.0):
     try:
@@ -155,12 +160,6 @@ def canonical_pair_key(chain, dex_id, sym1, sym2):
 # 풀에서 실제 대상 토큰 추출
 # =========================================================
 def derive_focus_asset(base_symbol, base_name, quote_symbol, quote_name):
-    """
-    규칙:
-    - 한쪽만 제외 대상이면, 제외되지 않은 쪽을 표시 대상 토큰으로 선택
-    - 둘 다 제외 대상이면 None
-    - 둘 다 제외 대상이 아니면 base 쪽 우선
-    """
     base_ex = is_excluded_asset(base_symbol, base_name)
     quote_ex = is_excluded_asset(quote_symbol, quote_name)
 
@@ -245,6 +244,7 @@ def pool_quality_ok(pool):
 # =========================================================
 def send_telegram_message(text):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        debug("텔레그램 환경변수 없음")
         print(text)
         return
 
@@ -260,7 +260,7 @@ def send_telegram_message(text):
         debug("텔레그램 전송 완료")
     except Exception as e:
         debug(f"텔레그램 전송 실패: {e}")
-        print(text)
+        raise
 
 # =========================================================
 # DeFiLlama
@@ -453,7 +453,6 @@ def collect_dex_pools_from_candidates(tokens):
             if p["chain"] not in TARGET_CHAINS:
                 continue
 
-            # 검색한 심볼이 base 또는 quote 어느 한쪽에 반드시 있어야 함
             if symbol not in {p["base_symbol"], p["quote_symbol"]}:
                 continue
 
@@ -756,6 +755,8 @@ def format_chain_leaders(chain_liq, chain_vol):
 # 메인 실행
 # =========================================================
 def run():
+    debug(f"현재 한국시간: {now_kst().strftime('%Y-%m-%d %H:%M:%S')}")
+
     debug("1단계 - DefiLlama")
     protocols = fetch_defillama_protocols()
 
@@ -790,7 +791,7 @@ def run():
 
     debug("9단계 - 메시지 조합")
     parts = [
-        "🚀 DeFi 실전 투자 봇 v8.3",
+        "🚀 DeFi 실전 투자 봇 v8.4",
         "",
         format_main_analysis(main_top3),
         "",
@@ -813,29 +814,16 @@ def run():
     send_telegram_message(final_text)
     return final_text
 
-# =========================================================
-# 스케줄 실행
-# =========================================================
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
-def now_kst():
-    return datetime.now(ZoneInfo("Asia/Seoul"))
-
+def job():
+    try:
+        print("프로그램 시작")
+        print("현재 한국시간:", now_kst().strftime("%Y-%m-%d %H:%M:%S"))
+        result = run()
+        print("실행 완료")
+        print(result[:1000])
+    except Exception as e:
+        print(f"실행 오류: {e}")
+        raise
 
 if __name__ == "__main__":
-    print("프로그램 시작")
-
-    # 🔥 여기 추가
-    print("현재 한국시간:", now_kst().strftime("%Y-%m-%d %H:%M:%S"))
-
-    job()  # 1회 실행 확인
-
-    schedule.every().day.at("09:00").do(job)
-    schedule.every().day.at("21:00").do(job)
-
-    print("스케줄 대기 시작 (KST 기준 09:00 / 21:00)")
-
-    while True:
-        schedule.run_pending()
-        time.sleep(20)
+    job()
