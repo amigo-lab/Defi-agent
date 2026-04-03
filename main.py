@@ -57,32 +57,35 @@ BAD_KEYWORDS = [
     "doge", "inu", "baby", "banana", "pepe", "elon", "cat", "shib", "meme"
 ]
 
-STABLE_SYMBOLS = {
-    "USDT", "USDC", "DAI", "BUSD", "FDUSD", "TUSD", "USDC.E", "USDT.E", "MAI"
+# 별도 모니터링 검색어
+# "체인 전체 API"가 없어서 검색 기반으로 최대한 폭넓게 수집
+BSC_SEARCH_TERMS = [
+    "WBNB", "BNB", "BTCB", "ETH", "USDT", "USDC", "FDUSD", "BUSD",
+    "PancakeSwap", "THENA", "Venus", "Lista", "Biswap", "Wombat", "Aster"
+]
+
+POLYGON_SEARCH_TERMS = [
+    "LGNS", "POL", "MATIC", "WPOL", "WMATIC", "WETH", "WBTC",
+    "USDT", "USDC", "DAI",
+    "QuickSwap", "Uniswap", "Aave", "Balancer", "Curve", "Sushi", "Kyber"
+]
+
+# 별도 모니터링에서 제외할 기축/스테이블 단독 위주 토큰
+EXCLUDED_BASE_SYMBOLS = {
+    "USDT", "USDC", "DAI", "BUSD", "FDUSD", "TUSD", "USDP", "USDD",
+    "USDC.E", "USDT.E", "MAI",
+    "BTC", "WBTC", "BTCB",
+    "ETH", "WETH",
+    "BNB", "WBNB",
+    "MATIC", "WMATIC", "POL", "WPOL",
 }
 
-MAJOR_SYMBOLS_BY_CHAIN = {
-    "polygon": {
-        "POL", "MATIC", "WPOL", "WMATIC", "WETH", "WBTC", "USDT", "USDC", "DAI",
-        "AAVE", "LINK", "SUSHI", "BAL", "CRV", "QUICK"
-    },
-    "bsc": {
-        "BNB", "WBNB", "BTCB", "ETH", "WETH", "USDT", "USDC", "FDUSD", "BUSD",
-        "CAKE", "LISTA", "THE", "THENA", "XVS"
-    },
-}
+# 완전 제외는 아니고 "둘 다 제외 대상이면 제외"
+# 예: BTCB/USDT, USDC/DAI 같은 건 제외
+# 예: LGNS/DAI, LINK/USDC 같은 건 허용
+def is_excluded_pair(base_symbol: str, quote_symbol: str) -> bool:
+    return base_symbol in EXCLUDED_BASE_SYMBOLS and quote_symbol in EXCLUDED_BASE_SYMBOLS
 
-MONITOR_SEARCH_TERMS = {
-    "bsc": [
-        "WBNB", "BNB", "BTCB", "USDT", "USDC", "FDUSD", "CAKE", "THENA", "LISTA", "XVS",
-        "PancakeSwap", "Venus", "Biswap", "Wombat"
-    ],
-    "polygon": [
-        "POL", "MATIC", "WPOL", "WMATIC", "WETH", "WBTC", "USDT", "USDC", "DAI",
-        "AAVE", "LINK", "SUSHI", "BAL", "CRV", "QUICK",
-        "QuickSwap", "Uniswap", "Balancer", "Curve", "Sushi", "Aave"
-    ],
-}
 
 REAL_EARNER_MIN_FEES_30D = 50_000
 REAL_EARNER_MIN_REVENUE_30D = 10_000
@@ -90,13 +93,15 @@ REAL_EARNER_MIN_LIQUIDITY = 150_000
 REAL_EARNER_MAX_FDV_LIQ_RATIO = 30
 
 REQUEST_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; DeFiAgentBot/7.0)",
+    "User-Agent": "Mozilla/5.0 (compatible; DeFiAgentBot/8.0)",
     "Accept": "application/json",
 }
 
 
 def http_get_json(url: str, params: Optional[Dict[str, Any]] = None, timeout: int = 30) -> Any:
     r = requests.get(url, params=params, headers=REQUEST_HEADERS, timeout=timeout)
+    if r.status_code == 400:
+        return {}
     r.raise_for_status()
     return r.json()
 
@@ -170,12 +175,13 @@ def token_name(token: Dict[str, Any]) -> str:
 def get_pair_uid(pair: Dict[str, Any]) -> str:
     chain_id = (pair.get("chainId") or "").lower()
     pair_address = (pair.get("pairAddress") or "").lower()
-    url = (pair.get("url") or "").strip().lower()
+    pair_url = (pair.get("url") or "").lower()
 
     if pair_address:
         return f"{chain_id}:{pair_address}"
-    if url:
-        return f"{chain_id}:{url}"
+    if pair_url:
+        return f"{chain_id}:{pair_url}"
+
     base = pair.get("baseToken") or {}
     quote = pair.get("quoteToken") or {}
     return f"{chain_id}:{token_symbol(base)}:{token_symbol(quote)}"
@@ -184,19 +190,9 @@ def get_pair_uid(pair: Dict[str, Any]) -> str:
 def build_pair_label(pair: Dict[str, Any]) -> str:
     base = pair.get("baseToken") or {}
     quote = pair.get("quoteToken") or {}
-
     base_symbol = token_symbol(base) or token_name(base) or "?"
     quote_symbol = token_symbol(quote) or token_name(quote) or "?"
-
-    label = f"{base_symbol} / {quote_symbol}"
-
-    pair_label = (pair.get("labels") or [])
-    if pair_label and isinstance(pair_label, list):
-        fee_label = " ".join(str(x) for x in pair_label if x)
-        if fee_label:
-            label += f" ({fee_label})"
-
-    return label
+    return f"{base_symbol} / {quote_symbol}"
 
 
 def get_llama_protocols() -> List[Dict[str, Any]]:
@@ -212,11 +208,9 @@ def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
         return []
     try:
         data = http_get_json(DEX_SEARCH_URL, params={"q": query}, timeout=30)
-        return data.get("pairs", []) or []
-    except requests.HTTPError as e:
-        if getattr(e.response, "status_code", None) == 400:
+        if not isinstance(data, dict):
             return []
-        raise
+        return data.get("pairs", []) or []
     except Exception:
         return []
 
@@ -462,15 +456,10 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
     tvl = to_float(protocol.get("tvl"), 0.0) or 0.0
     category = protocol.get("category") or "-"
     chain_id = (pair.get("chainId") or "").lower()
-    dex_id = pair.get("dexId") or "-"
     pair_url = pair.get("url") or "-"
 
     metrics = get_fee_revenue_metrics(protocol)
-    fees_24h = metrics["fees_24h"]
-    fees_7d = metrics["fees_7d"]
     fees_30d = metrics["fees_30d"]
-    revenue_24h = metrics["revenue_24h"]
-    revenue_7d = metrics["revenue_7d"]
     revenue_30d = metrics["revenue_30d"]
 
     security = extract_security_signals(pair)
@@ -478,8 +467,6 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
     fdv_liquidity_ratio = (fdv / liquidity_usd) if liquidity_usd > 0 and fdv > 0 else 0.0
     volume_liquidity_ratio = (volume_24h / liquidity_usd) if liquidity_usd > 0 else 0.0
     tvl_liquidity_ratio = (tvl / liquidity_usd) if liquidity_usd > 0 and tvl > 0 else 0.0
-    fee_tvl_ratio_30d = (fees_30d / tvl) if fees_30d and tvl > 0 else None
-    revenue_tvl_ratio_30d = (revenue_30d / tvl) if revenue_30d and tvl > 0 else None
 
     score = 100
     reasons = []
@@ -565,26 +552,6 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         score -= 14
         reasons.append("Revenue 30d가 매우 약함")
 
-    if fee_tvl_ratio_30d is not None:
-        if fee_tvl_ratio_30d >= 0.03:
-            score += 6
-            reasons.append("TVL 대비 Fees 효율 높음")
-        elif fee_tvl_ratio_30d < 0.005:
-            score -= 6
-            reasons.append("TVL 대비 Fees 효율 낮음")
-
-    if revenue_tvl_ratio_30d is not None:
-        if revenue_tvl_ratio_30d >= 0.01:
-            score += 6
-            reasons.append("TVL 대비 Revenue 효율 높음")
-        elif revenue_tvl_ratio_30d < 0.002:
-            score -= 6
-            reasons.append("TVL 대비 Revenue 효율 낮음")
-
-    if category in {"Dexes", "Lending", "Derivatives", "Bridge"}:
-        score += 3
-        reasons.append("주요 DeFi 카테고리")
-
     if security["is_honeypot"] is True:
         score -= 40
         reasons.append("허니팟 의심")
@@ -628,21 +595,14 @@ def analyze_project(protocol: Dict[str, Any], pair: Dict[str, Any]) -> Dict[str,
         "fdv_liquidity_ratio": fdv_liquidity_ratio,
         "volume_liquidity_ratio": volume_liquidity_ratio,
         "tvl_liquidity_ratio": tvl_liquidity_ratio,
-        "fees_24h": fees_24h,
-        "fees_7d": fees_7d,
         "fees_30d": fees_30d,
-        "revenue_24h": revenue_24h,
-        "revenue_7d": revenue_7d,
         "revenue_30d": revenue_30d,
-        "fee_tvl_ratio_30d": fee_tvl_ratio_30d,
-        "revenue_tvl_ratio_30d": revenue_tvl_ratio_30d,
-        "dex_id": dex_id,
-        "pair_url": pair_url,
         "score": max(score, 0),
         "grade": grade,
         "verdict": verdict,
         "reasons": reasons[:8],
         "security": security,
+        "pair_url": pair_url,
     }
 
 
@@ -688,7 +648,7 @@ def build_chain_leaders(projects: List[Dict[str, Any]]) -> Dict[str, Dict[str, D
     return leaders
 
 
-def pair_monitor_candidate(chain_name: str, pair: Dict[str, Any]) -> bool:
+def monitor_pair_candidate(chain_name: str, pair: Dict[str, Any]) -> bool:
     pair_chain = (pair.get("chainId") or "").lower()
     if pair_chain != chain_name:
         return False
@@ -704,61 +664,18 @@ def pair_monitor_candidate(chain_name: str, pair: Dict[str, Any]) -> bool:
     if is_bad_name(base_name) or is_bad_name(quote_name):
         return False
 
+    if is_excluded_pair(base_symbol, quote_symbol):
+        return False
+
     liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
     volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
-    txns_h24 = pair.get("txns", {}).get("h24", {}) or {}
-    buys = int(to_float(txns_h24.get("buys"), 0) or 0)
-    sells = int(to_float(txns_h24.get("sells"), 0) or 0)
 
     if liquidity_usd < 50_000:
         return False
     if volume_24h < 20_000:
         return False
-    if (buys + sells) < 20:
-        return False
-
-    majors = MAJOR_SYMBOLS_BY_CHAIN.get(chain_name, set())
-
-    # 너무 아무거나 뜨는 걸 줄이기 위해, 주요 심볼/스테이블 연관 풀 위주로만 채택
-    if base_symbol not in majors and quote_symbol not in majors:
-        if base_symbol not in STABLE_SYMBOLS and quote_symbol not in STABLE_SYMBOLS:
-            return False
 
     return True
-
-
-def monitor_pair_score(chain_name: str, pair: Dict[str, Any]) -> float:
-    base = pair.get("baseToken") or {}
-    quote = pair.get("quoteToken") or {}
-
-    base_symbol = token_symbol(base)
-    quote_symbol = token_symbol(quote)
-
-    liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
-    volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
-    score = liquidity_usd * 0.7 + volume_24h * 0.3
-
-    if base_symbol in STABLE_SYMBOLS or quote_symbol in STABLE_SYMBOLS:
-        score *= 1.08
-
-    majors = MAJOR_SYMBOLS_BY_CHAIN.get(chain_name, set())
-    if base_symbol in majors:
-        score *= 1.05
-    if quote_symbol in majors:
-        score *= 1.05
-
-    pair_label = build_pair_label(pair).upper()
-    dex_id = (pair.get("dexId") or "").lower()
-    if chain_name == "polygon" and (
-        "QUICKSWAP" in pair_label or "UNISWAP" in dex_id or "SUSHI" in dex_id or "CURVE" in dex_id or "BALANCER" in dex_id
-    ):
-        score *= 1.02
-    if chain_name == "bsc" and (
-        "PANCAKESWAP" in pair_label or "pancakeswap" in dex_id or "thena" in dex_id
-    ):
-        score *= 1.02
-
-    return score
 
 
 def build_chain_top3_from_search(chain_name: str, search_terms: List[str]) -> Dict[str, List[Dict[str, Any]]]:
@@ -768,41 +685,45 @@ def build_chain_top3_from_search(chain_name: str, search_terms: List[str]) -> Di
         pairs = search_dex_pairs(term)
 
         for pair in pairs:
-            if not pair_monitor_candidate(chain_name, pair):
+            if not monitor_pair_candidate(chain_name, pair):
                 continue
 
             uid = get_pair_uid(pair)
-            score = monitor_pair_score(chain_name, pair)
+            liquidity_usd = to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0
+            volume_24h = to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0
 
             row = {
                 "label": build_pair_label(pair),
-                "name": build_pair_label(pair),   # 기존 출력 호환용
+                "name": build_pair_label(pair),
                 "symbol": pair.get("dexId") or "-",
-                "liquidity_usd": to_float((pair.get("liquidity") or {}).get("usd"), 0.0) or 0.0,
-                "volume_24h": to_float((pair.get("volume") or {}).get("h24"), 0.0) or 0.0,
+                "liquidity_usd": liquidity_usd,
+                "volume_24h": volume_24h,
                 "fdv": to_float(pair.get("fdv"), 0.0) or 0.0,
                 "market_cap": to_float(pair.get("marketCap"), 0.0) or 0.0,
                 "price_usd": to_float(pair.get("priceUsd"), None),
                 "pair_url": pair.get("url") or "-",
                 "dex_id": pair.get("dexId") or "-",
-                "_score": score,
             }
 
             prev = pairs_map.get(uid)
-            if prev is None or row["_score"] > prev["_score"]:
+            if prev is None:
                 pairs_map[uid] = row
+            else:
+                # 같은 pairAddress면 더 큰 수치 보존
+                if liquidity_usd > prev["liquidity_usd"] or volume_24h > prev["volume_24h"]:
+                    pairs_map[uid] = row
 
     projects = list(pairs_map.values())
 
     top_liquidity = sorted(
         projects,
-        key=lambda x: (x["liquidity_usd"], x["volume_24h"], x["_score"]),
+        key=lambda x: (x["liquidity_usd"], x["volume_24h"]),
         reverse=True
     )[:3]
 
     top_volume = sorted(
         projects,
-        key=lambda x: (x["volume_24h"], x["liquidity_usd"], x["_score"]),
+        key=lambda x: (x["volume_24h"], x["liquidity_usd"]),
         reverse=True
     )[:3]
 
@@ -819,10 +740,11 @@ def format_monitor_line(rank: int, pool: Dict[str, Any], mode: str) -> str:
             f"{rank}) {label} / DEX {dex_id} / 유동성 {fmt_num(pool['liquidity_usd'])} "
             f"/ 거래량 {fmt_num(pool['volume_24h'])} / 링크 {pair_url}"
         )
-    return (
-        f"{rank}) {label} / DEX {dex_id} / 거래량 {fmt_num(pool['volume_24h'])} "
-        f"/ 유동성 {fmt_num(pool['liquidity_usd'])} / 링크 {pair_url}"
-    )
+    else:
+        return (
+            f"{rank}) {label} / DEX {dex_id} / 거래량 {fmt_num(pool['volume_24h'])} "
+            f"/ 유동성 {fmt_num(pool['liquidity_usd'])} / 링크 {pair_url}"
+        )
 
 
 def build_message(projects: List[Dict[str, Any]], leaders: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
@@ -882,11 +804,6 @@ def build_message(projects: List[Dict[str, Any]], leaders: Dict[str, Dict[str, D
             lines.append("")
     else:
         lines.append("- 조건 충족 프로젝트 없음")
-        lines.append(
-            f"  기준: Fees30d ≥ {fmt_num(REAL_EARNER_MIN_FEES_30D)}, "
-            f"Revenue30d ≥ {fmt_num(REAL_EARNER_MIN_REVENUE_30D)}, "
-            f"유동성 ≥ {fmt_num(REAL_EARNER_MIN_LIQUIDITY)}"
-        )
         lines.append("")
 
     lines.append("[체인별 유동성 1위]")
@@ -908,8 +825,8 @@ def build_message(projects: List[Dict[str, Any]], leaders: Dict[str, Dict[str, D
         else:
             lines.append(f"- {chain}: 기본 필터 통과 프로젝트 없음")
 
-    bsc_top3 = build_chain_top3_from_search("bsc", MONITOR_SEARCH_TERMS["bsc"])
-    polygon_top3 = build_chain_top3_from_search("polygon", MONITOR_SEARCH_TERMS["polygon"])
+    bsc_top3 = build_chain_top3_from_search("bsc", BSC_SEARCH_TERMS)
+    polygon_top3 = build_chain_top3_from_search("polygon", POLYGON_SEARCH_TERMS)
 
     lines.append("")
     lines.append("[BSC 별도 모니터링 - 유동성 TOP 3]")
