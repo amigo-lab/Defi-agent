@@ -3,52 +3,52 @@
     "ethereum": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 4934050.08,
-        "volume_24h": 99984.95
+        "liquidity_usd": 4906026.06,
+        "volume_24h": 63950.7
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 729523.29,
-        "volume_24h": 436852.18
+        "liquidity_usd": 730376.9,
+        "volume_24h": 329390.32
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 783273.65,
-        "volume_24h": 89663.88
+        "liquidity_usd": 761950.84,
+        "volume_24h": 50022.84
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 783273.65,
-        "volume_24h": 89663.88
+        "liquidity_usd": 761950.84,
+        "volume_24h": 50022.84
       }
     },
-    "base": {
+    "base": {},
+    "bsc": {},
+    "polygon": {
       "liquidity": {
         "name": "Aave V3",
-        "liquidity_usd": 878247.75,
-        "volume_24h": 55752.75
+        "liquidity_usd": 235948.19,
+        "volume_24h": 63811.96
       },
       "volume": {
         "name": "Aave V3",
-        "liquidity_usd": 878247.75,
-        "volume_24h": 55752.75
+        "liquidity_usd": 235948.19,
+        "volume_24h": 63811.96
       }
-    },
-    "bsc": {},
-    "polygon": {}
+    }
   },
   "top_projects": [
-    {
-      "name": "Aave V3",
-      "score": 52,
-      "chain": "base"
-    },
     {
       "name": "Euler V2",
       "score": 40,
       "chain": "ethereum"
+    },
+    {
+      "name": "Aave V3",
+      "score": 5,
+      "chain": "polygon"
     },
     {
       "name": "Pendle",
