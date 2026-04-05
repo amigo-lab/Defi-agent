@@ -3,57 +3,68 @@
     "ethereum": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 4902570.94,
-        "volume_24h": 88439.56
+        "liquidity_usd": 4826724.11,
+        "volume_24h": 56110.35
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 734327.9,
-        "volume_24h": 513488.6
+        "liquidity_usd": 727398.96,
+        "volume_24h": 340534.56
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1363513.75,
-        "volume_24h": 77140.59
+        "liquidity_usd": 1311372.89,
+        "volume_24h": 66833.0
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1363513.75,
-        "volume_24h": 77140.59
+        "liquidity_usd": 1311372.89,
+        "volume_24h": 66833.0
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 161128.1,
-        "volume_24h": 57509.96
+        "liquidity_usd": 3848912.61,
+        "volume_24h": 99162.63
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 161128.1,
-        "volume_24h": 57509.96
+        "liquidity_usd": 3848912.61,
+        "volume_24h": 99162.63
       }
     },
     "bsc": {},
-    "polygon": {}
+    "polygon": {
+      "liquidity": {
+        "name": "Aave V3",
+        "liquidity_usd": 183585.08,
+        "volume_24h": 65537.42
+      },
+      "volume": {
+        "name": "Aave V3",
+        "liquidity_usd": 183585.08,
+        "volume_24h": 65537.42
+      }
+    }
   },
   "top_projects": [
+    {
+      "name": "Anemoy Capital",
+      "score": 49,
+      "chain": "base"
+    },
     {
       "name": "Euler V2",
       "score": 40,
       "chain": "ethereum"
     },
     {
-      "name": "Anemoy Capital",
-      "score": 35,
-      "chain": "base"
-    },
-    {
-      "name": "Pendle",
+      "name": "Aave V3",
       "score": 0,
-      "chain": "arbitrum"
+      "chain": "polygon"
     }
   ]
 }
