@@ -3,28 +3,39 @@
     "ethereum": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 4907477.57,
-        "volume_24h": 86181.93
+        "liquidity_usd": 4902570.94,
+        "volume_24h": 88439.56
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 736933.97,
-        "volume_24h": 476871.68
+        "liquidity_usd": 734327.9,
+        "volume_24h": 513488.6
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1361344.39,
-        "volume_24h": 72513.53
+        "liquidity_usd": 1363513.75,
+        "volume_24h": 77140.59
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1361344.39,
-        "volume_24h": 72513.53
+        "liquidity_usd": 1363513.75,
+        "volume_24h": 77140.59
       }
     },
-    "base": {},
+    "base": {
+      "liquidity": {
+        "name": "Anemoy Capital",
+        "liquidity_usd": 161128.1,
+        "volume_24h": 57509.96
+      },
+      "volume": {
+        "name": "Anemoy Capital",
+        "liquidity_usd": 161128.1,
+        "volume_24h": 57509.96
+      }
+    },
     "bsc": {},
     "polygon": {}
   },
@@ -35,14 +46,14 @@
       "chain": "ethereum"
     },
     {
+      "name": "Anemoy Capital",
+      "score": 35,
+      "chain": "base"
+    },
+    {
       "name": "Pendle",
       "score": 0,
       "chain": "arbitrum"
-    },
-    {
-      "name": "Convex Finance",
-      "score": 0,
-      "chain": "ethereum"
     }
   ]
 }
