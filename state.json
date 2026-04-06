@@ -3,68 +3,68 @@
     "ethereum": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 4826724.11,
-        "volume_24h": 56110.35
+        "liquidity_usd": 5044185.02,
+        "volume_24h": 88238.86
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 727398.96,
-        "volume_24h": 340534.56
+        "liquidity_usd": 732263.65,
+        "volume_24h": 316236.0
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1311372.89,
-        "volume_24h": 66833.0
+        "liquidity_usd": 1399958.96,
+        "volume_24h": 120677.3
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1311372.89,
-        "volume_24h": 66833.0
+        "liquidity_usd": 1399958.96,
+        "volume_24h": 120677.3
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3848912.61,
-        "volume_24h": 99162.63
+        "liquidity_usd": 3849518.79,
+        "volume_24h": 262626.82
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3848912.61,
-        "volume_24h": 99162.63
+        "liquidity_usd": 3849518.79,
+        "volume_24h": 262626.82
       }
     },
     "bsc": {},
     "polygon": {
       "liquidity": {
         "name": "Aave V3",
-        "liquidity_usd": 183585.08,
-        "volume_24h": 65537.42
+        "liquidity_usd": 195465.22,
+        "volume_24h": 58895.08
       },
       "volume": {
         "name": "Aave V3",
-        "liquidity_usd": 183585.08,
-        "volume_24h": 65537.42
+        "liquidity_usd": 195465.22,
+        "volume_24h": 58895.08
       }
     }
   },
   "top_projects": [
     {
+      "name": "Fluid Lending",
+      "score": 60,
+      "chain": "base"
+    },
+    {
       "name": "Anemoy Capital",
-      "score": 49,
+      "score": 59,
       "chain": "base"
     },
     {
       "name": "Euler V2",
       "score": 40,
       "chain": "ethereum"
-    },
-    {
-      "name": "Aave V3",
-      "score": 0,
-      "chain": "polygon"
     }
   ]
 }
