@@ -3,37 +3,37 @@
     "ethereum": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 5086050.79,
-        "volume_24h": 145338.15
+        "liquidity_usd": 4969407.44,
+        "volume_24h": 186829.59
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 736861.22,
-        "volume_24h": 337810.42
+        "liquidity_usd": 729712.29,
+        "volume_24h": 390563.24
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1411413.86,
-        "volume_24h": 116322.88
+        "liquidity_usd": 1352523.23,
+        "volume_24h": 83213.95
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1411413.86,
-        "volume_24h": 116322.88
+        "liquidity_usd": 1352523.23,
+        "volume_24h": 83213.95
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3840686.05,
-        "volume_24h": 373353.63
+        "liquidity_usd": 3872777.35,
+        "volume_24h": 442622.8
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3840686.05,
-        "volume_24h": 373353.63
+        "liquidity_usd": 3872777.35,
+        "volume_24h": 442622.8
       }
     },
     "bsc": {},
@@ -41,13 +41,13 @@
     "avalanche": {
       "liquidity": {
         "name": "SolvBTC",
-        "liquidity_usd": 363485.24,
-        "volume_24h": 141445.53
+        "liquidity_usd": 356648.41,
+        "volume_24h": 142026.39
       },
       "volume": {
         "name": "SolvBTC",
-        "liquidity_usd": 363485.24,
-        "volume_24h": 141445.53
+        "liquidity_usd": 356648.41,
+        "volume_24h": 142026.39
       }
     }
   },
