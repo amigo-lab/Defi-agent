@@ -3,37 +3,37 @@
     "ethereum": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 4969407.44,
-        "volume_24h": 186829.59
+        "liquidity_usd": 4911895.78,
+        "volume_24h": 146013.26
       },
       "volume": {
         "name": "Euler V2",
-        "liquidity_usd": 729712.29,
-        "volume_24h": 390563.24
+        "liquidity_usd": 715987.06,
+        "volume_24h": 302003.15
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1352523.23,
-        "volume_24h": 83213.95
+        "liquidity_usd": 1342233.08,
+        "volume_24h": 55779.08
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1352523.23,
-        "volume_24h": 83213.95
+        "liquidity_usd": 1342233.08,
+        "volume_24h": 55779.08
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3872777.35,
-        "volume_24h": 442622.8
+        "liquidity_usd": 3759126.06,
+        "volume_24h": 556920.7
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3872777.35,
-        "volume_24h": 442622.8
+        "liquidity_usd": 3759126.06,
+        "volume_24h": 556920.7
       }
     },
     "bsc": {},
@@ -41,25 +41,25 @@
     "avalanche": {
       "liquidity": {
         "name": "SolvBTC",
-        "liquidity_usd": 356648.41,
-        "volume_24h": 142026.39
+        "liquidity_usd": 356271.92,
+        "volume_24h": 88391.13
       },
       "volume": {
         "name": "SolvBTC",
-        "liquidity_usd": 356648.41,
-        "volume_24h": 142026.39
+        "liquidity_usd": 356271.92,
+        "volume_24h": 88391.13
       }
     }
   },
   "top_projects": [
     {
-      "name": "Anemoy Capital",
-      "score": 59,
+      "name": "Aave V3",
+      "score": 70,
       "chain": "base"
     },
     {
-      "name": "Aave V3",
-      "score": 52,
+      "name": "Anemoy Capital",
+      "score": 59,
       "chain": "base"
     },
     {
