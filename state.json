@@ -2,69 +2,57 @@
   "chain_leaders": {
     "ethereum": {
       "liquidity": {
-        "name": "Convex Finance",
-        "liquidity_usd": 5362168.08,
-        "volume_24h": 179512.63
+        "name": "Avalon USDa",
+        "liquidity_usd": 12471322.6,
+        "volume_24h": 3859284.14
       },
       "volume": {
-        "name": "Convex Finance",
-        "liquidity_usd": 5362168.08,
-        "volume_24h": 179512.63
+        "name": "Avalon USDa",
+        "liquidity_usd": 12471322.6,
+        "volume_24h": 3859284.14
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1450582.73,
-        "volume_24h": 81734.67
+        "liquidity_usd": 795295.51,
+        "volume_24h": 105965.27
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1450582.73,
-        "volume_24h": 81734.67
+        "liquidity_usd": 795295.51,
+        "volume_24h": 105965.27
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3796585.06,
-        "volume_24h": 1052742.17
+        "liquidity_usd": 3496684.32,
+        "volume_24h": 1721115.69
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3796585.06,
-        "volume_24h": 1052742.17
+        "liquidity_usd": 3496684.32,
+        "volume_24h": 1721115.69
       }
     },
     "bsc": {},
-    "polygon": {},
-    "avalanche": {
-      "liquidity": {
-        "name": "SolvBTC",
-        "liquidity_usd": 372693.34,
-        "volume_24h": 104340.45
-      },
-      "volume": {
-        "name": "SolvBTC",
-        "liquidity_usd": 372693.34,
-        "volume_24h": 104340.45
-      }
-    }
+    "polygon": {}
   },
   "top_projects": [
-    {
-      "name": "Aave V3",
-      "score": 70,
-      "chain": "base"
-    },
     {
       "name": "Anemoy Capital",
       "score": 67,
       "chain": "base"
     },
     {
+      "name": "Aave V3",
+      "score": 52,
+      "chain": "base"
+    },
+    {
       "name": "Euler V2",
-      "score": 22,
+      "score": 40,
       "chain": "ethereum"
     }
   ]
