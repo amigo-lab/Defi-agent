@@ -3,43 +3,48 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 13498122.55,
-        "volume_24h": 5673716.17
+        "liquidity_usd": 13881220.19,
+        "volume_24h": 2765943.12
       },
       "volume": {
         "name": "Avalon USDa",
-        "liquidity_usd": 13498122.55,
-        "volume_24h": 5673716.17
+        "liquidity_usd": 13881220.19,
+        "volume_24h": 2765943.12
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 808474.35,
-        "volume_24h": 148669.51
+        "liquidity_usd": 820503.67,
+        "volume_24h": 126898.31
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 808474.35,
-        "volume_24h": 148669.51
+        "liquidity_usd": 820503.67,
+        "volume_24h": 126898.31
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3456837.03,
-        "volume_24h": 560782.69
+        "liquidity_usd": 3192541.05,
+        "volume_24h": 311851.35
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3456837.03,
-        "volume_24h": 560782.69
+        "liquidity_usd": 3192541.05,
+        "volume_24h": 311851.35
       }
     },
     "bsc": {},
     "polygon": {}
   },
   "top_projects": [
+    {
+      "name": "Fluid Lending",
+      "score": 60,
+      "chain": "base"
+    },
     {
       "name": "Anemoy Capital",
       "score": 59,
@@ -48,11 +53,6 @@
     {
       "name": "Aave V3",
       "score": 52,
-      "chain": "base"
-    },
-    {
-      "name": "Venus Core Pool",
-      "score": 48,
       "chain": "base"
     }
   ]
