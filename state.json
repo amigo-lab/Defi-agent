@@ -3,37 +3,37 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 14360986.89,
-        "volume_24h": 278892.75
+        "liquidity_usd": 14569924.27,
+        "volume_24h": 225949.03
       },
       "volume": {
         "name": "Avalon USDa",
-        "liquidity_usd": 14360986.89,
-        "volume_24h": 278892.75
+        "liquidity_usd": 14569924.27,
+        "volume_24h": 225949.03
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 804153.23,
-        "volume_24h": 201832.85
+        "liquidity_usd": 808532.68,
+        "volume_24h": 119842.95
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 804153.23,
-        "volume_24h": 201832.85
+        "liquidity_usd": 808532.68,
+        "volume_24h": 119842.95
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3165257.6,
-        "volume_24h": 485013.56
+        "liquidity_usd": 2631828.45,
+        "volume_24h": 531002.14
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3165257.6,
-        "volume_24h": 485013.56
+        "liquidity_usd": 2631828.45,
+        "volume_24h": 531002.14
       }
     },
     "bsc": {},
@@ -42,7 +42,7 @@
   "top_projects": [
     {
       "name": "Anemoy Capital",
-      "score": 59,
+      "score": 67,
       "chain": "base"
     },
     {
