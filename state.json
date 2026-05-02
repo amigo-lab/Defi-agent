@@ -3,39 +3,39 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 18009785.05,
-        "volume_24h": 2000564.17
+        "liquidity_usd": 18013849.91,
+        "volume_24h": 2090986.09
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 3757003.14,
-        "volume_24h": 3590515.6
+        "liquidity_usd": 3670532.25,
+        "volume_24h": 3269101.95
       }
     },
     "arbitrum": {},
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 862597.04,
-        "volume_24h": 110213.3
+        "liquidity_usd": 895880.23,
+        "volume_24h": 109982.54
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 862597.04,
-        "volume_24h": 110213.3
+        "liquidity_usd": 895880.23,
+        "volume_24h": 109982.54
       }
     },
     "bsc": {},
     "polygon": {
       "liquidity": {
-        "name": "Aave V3",
-        "liquidity_usd": 206635.71,
-        "volume_24h": 78020.84
+        "name": "Convex Finance",
+        "liquidity_usd": 4660823.09,
+        "volume_24h": 200790.98
       },
       "volume": {
-        "name": "Aave V3",
-        "liquidity_usd": 206635.71,
-        "volume_24h": 78020.84
+        "name": "Convex Finance",
+        "liquidity_usd": 4660823.09,
+        "volume_24h": 200790.98
       }
     }
   },
@@ -51,9 +51,9 @@
       "chain": "ethereum"
     },
     {
-      "name": "Avalon USDa",
+      "name": "Convex Finance",
       "score": 24,
-      "chain": "ethereum"
+      "chain": "polygon"
     }
   ]
 }
