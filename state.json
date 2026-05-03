@@ -3,13 +3,13 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 18074214.01,
-        "volume_24h": 1686259.35
+        "liquidity_usd": 18087518.8,
+        "volume_24h": 1834436.37
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 3536938.46,
-        "volume_24h": 4039136.4
+        "liquidity_usd": 3732640.37,
+        "volume_24h": 3354189.37
       }
     },
     "arbitrum": {},
@@ -18,13 +18,13 @@
     "polygon": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 4658147.65,
-        "volume_24h": 182888.78
+        "liquidity_usd": 4677442.34,
+        "volume_24h": 185554.5
       },
       "volume": {
         "name": "Convex Finance",
-        "liquidity_usd": 4658147.65,
-        "volume_24h": 182888.78
+        "liquidity_usd": 4677442.34,
+        "volume_24h": 185554.5
       }
     }
   },
