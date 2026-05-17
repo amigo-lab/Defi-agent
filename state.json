@@ -3,48 +3,54 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20496083.43,
-        "volume_24h": 11613488.72
+        "liquidity_usd": 20495281.83,
+        "volume_24h": 5567112.95
       },
       "volume": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20496083.43,
-        "volume_24h": 11613488.72
+        "liquidity_usd": 20495281.83,
+        "volume_24h": 5567112.95
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1293082.34,
-        "volume_24h": 848991.43
+        "liquidity_usd": 1871239.35,
+        "volume_24h": 92656.35
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1293082.34,
-        "volume_24h": 848991.43
+        "liquidity_usd": 1871239.35,
+        "volume_24h": 92656.35
       }
     },
     "base": {
       "liquidity": {
-        "name": "Anemoy Capital",
-        "liquidity_usd": 3373533.83,
-        "volume_24h": 402829.43
+        "name": "Aave V3",
+        "liquidity_usd": 849831.74,
+        "volume_24h": 66164.16
       },
       "volume": {
-        "name": "Anemoy Capital",
-        "liquidity_usd": 3373533.83,
-        "volume_24h": 402829.43
+        "name": "SolvBTC",
+        "liquidity_usd": 274975.62,
+        "volume_24h": 130223.92
       }
     },
     "bsc": {},
-    "polygon": {}
+    "polygon": {
+      "liquidity": {
+        "name": "Convex Finance",
+        "liquidity_usd": 5803972.02,
+        "volume_24h": 347891.21
+      },
+      "volume": {
+        "name": "Convex Finance",
+        "liquidity_usd": 5803972.02,
+        "volume_24h": 347891.21
+      }
+    }
   },
   "top_projects": [
-    {
-      "name": "Anemoy Capital",
-      "score": 59,
-      "chain": "base"
-    },
     {
       "name": "Hastra",
       "score": 59,
@@ -54,6 +60,11 @@
       "name": "Aave V3",
       "score": 52,
       "chain": "base"
+    },
+    {
+      "name": "Avalon USDa",
+      "score": 32,
+      "chain": "ethereum"
     }
   ]
 }
