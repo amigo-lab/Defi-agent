@@ -3,50 +3,50 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20495281.83,
-        "volume_24h": 5567112.95
+        "liquidity_usd": 20501922.81,
+        "volume_24h": 4998026.76
       },
       "volume": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20495281.83,
-        "volume_24h": 5567112.95
+        "liquidity_usd": 20501922.81,
+        "volume_24h": 4998026.76
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1871239.35,
-        "volume_24h": 92656.35
+        "liquidity_usd": 1911641.19,
+        "volume_24h": 69502.37
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1871239.35,
-        "volume_24h": 92656.35
+        "liquidity_usd": 1911641.19,
+        "volume_24h": 69502.37
       }
     },
     "base": {
       "liquidity": {
         "name": "Aave V3",
-        "liquidity_usd": 849831.74,
-        "volume_24h": 66164.16
+        "liquidity_usd": 857732.59,
+        "volume_24h": 59833.14
       },
       "volume": {
         "name": "SolvBTC",
-        "liquidity_usd": 274975.62,
-        "volume_24h": 130223.92
+        "liquidity_usd": 284959.13,
+        "volume_24h": 120988.39
       }
     },
     "bsc": {},
     "polygon": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 5803972.02,
-        "volume_24h": 347891.21
+        "liquidity_usd": 5862150.75,
+        "volume_24h": 354089.4
       },
       "volume": {
         "name": "Convex Finance",
-        "liquidity_usd": 5803972.02,
-        "volume_24h": 347891.21
+        "liquidity_usd": 5862150.75,
+        "volume_24h": 354089.4
       }
     }
   },
