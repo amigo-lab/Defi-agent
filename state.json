@@ -3,67 +3,56 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20501922.81,
-        "volume_24h": 4998026.76
+        "liquidity_usd": 20493715.65,
+        "volume_24h": 5875130.72
       },
       "volume": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20501922.81,
-        "volume_24h": 4998026.76
+        "liquidity_usd": 20493715.65,
+        "volume_24h": 5875130.72
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1911641.19,
-        "volume_24h": 69502.37
+        "liquidity_usd": 1308460.93,
+        "volume_24h": 650634.67
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1911641.19,
-        "volume_24h": 69502.37
+        "liquidity_usd": 1308460.93,
+        "volume_24h": 650634.67
       }
     },
     "base": {
       "liquidity": {
-        "name": "Aave V3",
-        "liquidity_usd": 857732.59,
-        "volume_24h": 59833.14
+        "name": "Anemoy Capital",
+        "liquidity_usd": 3369490.11,
+        "volume_24h": 247253.68
       },
       "volume": {
-        "name": "SolvBTC",
-        "liquidity_usd": 284959.13,
-        "volume_24h": 120988.39
+        "name": "Anemoy Capital",
+        "liquidity_usd": 3369490.11,
+        "volume_24h": 247253.68
       }
     },
     "bsc": {},
-    "polygon": {
-      "liquidity": {
-        "name": "Convex Finance",
-        "liquidity_usd": 5862150.75,
-        "volume_24h": 354089.4
-      },
-      "volume": {
-        "name": "Convex Finance",
-        "liquidity_usd": 5862150.75,
-        "volume_24h": 354089.4
-      }
-    }
+    "polygon": {}
   },
   "top_projects": [
     {
-      "name": "Hastra",
-      "score": 59,
-      "chain": "ethereum"
-    },
-    {
       "name": "Aave V3",
-      "score": 52,
+      "score": 70,
       "chain": "base"
     },
     {
-      "name": "Avalon USDa",
-      "score": 32,
+      "name": "Anemoy Capital",
+      "score": 59,
+      "chain": "base"
+    },
+    {
+      "name": "Hastra",
+      "score": 59,
       "chain": "ethereum"
     }
   ]
