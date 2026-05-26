@@ -15,40 +15,29 @@
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1435033.3,
-        "volume_24h": 593075.34
+        "liquidity_usd": 1409048.51,
+        "volume_24h": 727340.33
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1435033.3,
-        "volume_24h": 593075.34
+        "liquidity_usd": 1409048.51,
+        "volume_24h": 727340.33
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3606063.98,
-        "volume_24h": 529451.3
+        "liquidity_usd": 3602955.95,
+        "volume_24h": 567241.16
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3606063.98,
-        "volume_24h": 529451.3
+        "liquidity_usd": 3602955.95,
+        "volume_24h": 567241.16
       }
     },
     "bsc": {},
-    "polygon": {
-      "liquidity": {
-        "name": "Convex Finance",
-        "liquidity_usd": 6829373.31,
-        "volume_24h": 400286.42
-      },
-      "volume": {
-        "name": "Convex Finance",
-        "liquidity_usd": 6829373.31,
-        "volume_24h": 400286.42
-      }
-    }
+    "polygon": {}
   },
   "top_projects": [
     {
