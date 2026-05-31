@@ -3,41 +3,52 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 18511179.78,
-        "volume_24h": 3783140.54
+        "liquidity_usd": 18249504.95,
+        "volume_24h": 2151440.22
       },
       "volume": {
         "name": "Avalon USDa",
-        "liquidity_usd": 18511179.78,
-        "volume_24h": 3783140.54
+        "liquidity_usd": 18249504.95,
+        "volume_24h": 2151440.22
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1567529.8,
-        "volume_24h": 132679.94
+        "liquidity_usd": 1565077.23,
+        "volume_24h": 120336.99
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1567529.8,
-        "volume_24h": 132679.94
+        "liquidity_usd": 1565077.23,
+        "volume_24h": 120336.99
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3641335.11,
-        "volume_24h": 292290.57
+        "liquidity_usd": 3642986.99,
+        "volume_24h": 553892.21
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3641335.11,
-        "volume_24h": 292290.57
+        "liquidity_usd": 3642986.99,
+        "volume_24h": 553892.21
       }
     },
     "bsc": {},
-    "polygon": {}
+    "polygon": {
+      "liquidity": {
+        "name": "Convex Finance",
+        "liquidity_usd": 7371172.29,
+        "volume_24h": 437052.34
+      },
+      "volume": {
+        "name": "Convex Finance",
+        "liquidity_usd": 7371172.29,
+        "volume_24h": 437052.34
+      }
+    }
   },
   "top_projects": [
     {
