@@ -3,43 +3,48 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 17061102.55,
-        "volume_24h": 6267187.68
+        "liquidity_usd": 17022682.47,
+        "volume_24h": 7713975.73
       },
       "volume": {
-        "name": "Hastra",
-        "liquidity_usd": 9001098.44,
-        "volume_24h": 7052324.51
+        "name": "Avalon USDa",
+        "liquidity_usd": 17022682.47,
+        "volume_24h": 7713975.73
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1468430.43,
-        "volume_24h": 160792.05
+        "liquidity_usd": 1487241.29,
+        "volume_24h": 149468.45
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1468430.43,
-        "volume_24h": 160792.05
+        "liquidity_usd": 1487241.29,
+        "volume_24h": 149468.45
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3470825.92,
-        "volume_24h": 1067424.43
+        "liquidity_usd": 3458134.02,
+        "volume_24h": 1248088.6
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3470825.92,
-        "volume_24h": 1067424.43
+        "liquidity_usd": 3458134.02,
+        "volume_24h": 1248088.6
       }
     },
     "bsc": {},
     "polygon": {}
   },
   "top_projects": [
+    {
+      "name": "Aave V3",
+      "score": 70,
+      "chain": "base"
+    },
     {
       "name": "Anemoy Capital",
       "score": 67,
@@ -48,11 +53,6 @@
     {
       "name": "Hastra",
       "score": 57,
-      "chain": "ethereum"
-    },
-    {
-      "name": "Aster Bridge",
-      "score": 50,
       "chain": "ethereum"
     }
   ]
