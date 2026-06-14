@@ -3,68 +3,57 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20554755.21,
-        "volume_24h": 1852041.46
+        "liquidity_usd": 20558042.8,
+        "volume_24h": 1604146.21
       },
       "volume": {
-        "name": "Hastra",
-        "liquidity_usd": 9002274.54,
-        "volume_24h": 15131971.67
+        "name": "Avalon USDa",
+        "liquidity_usd": 20558042.8,
+        "volume_24h": 1604146.21
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1410421.4,
-        "volume_24h": 52458.9
+        "liquidity_usd": 953027.83,
+        "volume_24h": 186410.34
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1410421.4,
-        "volume_24h": 52458.9
+        "liquidity_usd": 953027.83,
+        "volume_24h": 186410.34
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3578222.77,
-        "volume_24h": 2824447.72
+        "liquidity_usd": 3580780.57,
+        "volume_24h": 660884.93
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3578222.77,
-        "volume_24h": 2824447.72
+        "liquidity_usd": 3580780.57,
+        "volume_24h": 660884.93
       }
     },
     "bsc": {},
-    "polygon": {
-      "liquidity": {
-        "name": "Aave V3",
-        "liquidity_usd": 131533.68,
-        "volume_24h": 57711.22
-      },
-      "volume": {
-        "name": "Aave V3",
-        "liquidity_usd": 131533.68,
-        "volume_24h": 57711.22
-      }
-    }
+    "polygon": {}
   },
   "top_projects": [
     {
+      "name": "Aster Bridge",
+      "score": 60,
+      "chain": "ethereum"
+    },
+    {
       "name": "Anemoy Capital",
-      "score": 67,
+      "score": 59,
       "chain": "base"
     },
     {
-      "name": "Hastra",
-      "score": 57,
-      "chain": "ethereum"
-    },
-    {
-      "name": "Aster Bridge",
-      "score": 56,
-      "chain": "ethereum"
+      "name": "Aave V3",
+      "score": 52,
+      "chain": "base"
     }
   ]
 }
