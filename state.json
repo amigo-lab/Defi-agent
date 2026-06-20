@@ -3,37 +3,37 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20335677.55,
-        "volume_24h": 2087176.0
+        "liquidity_usd": 20334438.43,
+        "volume_24h": 1442174.14
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 2661066.99,
-        "volume_24h": 19625178.11
+        "liquidity_usd": 2474732.67,
+        "volume_24h": 4963017.78
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1456041.25,
-        "volume_24h": 58210.49
+        "liquidity_usd": 937368.45,
+        "volume_24h": 181169.27
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1456041.25,
-        "volume_24h": 58210.49
+        "liquidity_usd": 937368.45,
+        "volume_24h": 181169.27
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3470397.62,
-        "volume_24h": 1641307.07
+        "liquidity_usd": 3579542.99,
+        "volume_24h": 1321491.26
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3470397.62,
-        "volume_24h": 1641307.07
+        "liquidity_usd": 3579542.99,
+        "volume_24h": 1321491.26
       }
     },
     "bsc": {},
@@ -46,13 +46,13 @@
       "chain": "base"
     },
     {
-      "name": "Hastra",
-      "score": 49,
+      "name": "Aster Bridge",
+      "score": 50,
       "chain": "ethereum"
     },
     {
-      "name": "Aster Bridge",
-      "score": 46,
+      "name": "Hastra",
+      "score": 49,
       "chain": "ethereum"
     }
   ]
