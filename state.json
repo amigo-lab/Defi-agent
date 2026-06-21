@@ -3,62 +3,62 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20315996.9,
-        "volume_24h": 1414363.84
+        "liquidity_usd": 20314999.16,
+        "volume_24h": 2353000.58
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 2339683.6,
-        "volume_24h": 3972577.8
+        "liquidity_usd": 2469989.96,
+        "volume_24h": 2563427.47
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 923206.23,
-        "volume_24h": 239929.45
+        "liquidity_usd": 1507029.14,
+        "volume_24h": 61140.25
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 923206.23,
-        "volume_24h": 239929.45
+        "liquidity_usd": 1507029.14,
+        "volume_24h": 61140.25
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3577340.9,
-        "volume_24h": 875176.81
+        "liquidity_usd": 3575080.06,
+        "volume_24h": 168506.52
       },
       "volume": {
-        "name": "Anemoy Capital",
-        "liquidity_usd": 3577340.9,
-        "volume_24h": 875176.81
+        "name": "LayerZero V2",
+        "liquidity_usd": 413830.96,
+        "volume_24h": 993331.56
       }
     },
     "bsc": {},
     "polygon": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 9430669.12,
-        "volume_24h": 743399.27
+        "liquidity_usd": 9412286.45,
+        "volume_24h": 627542.66
       },
       "volume": {
         "name": "Convex Finance",
-        "liquidity_usd": 9430669.12,
-        "volume_24h": 743399.27
+        "liquidity_usd": 9412286.45,
+        "volume_24h": 627542.66
       }
     }
   },
   "top_projects": [
     {
-      "name": "Anemoy Capital",
-      "score": 67,
+      "name": "LayerZero V2",
+      "score": 60,
       "chain": "base"
     },
     {
-      "name": "Aave V3",
-      "score": 52,
+      "name": "Anemoy Capital",
+      "score": 59,
       "chain": "base"
     },
     {
