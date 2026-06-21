@@ -3,68 +3,68 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20314999.16,
-        "volume_24h": 2353000.58
+        "liquidity_usd": 20244973.26,
+        "volume_24h": 1786225.15
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 2469989.96,
-        "volume_24h": 2563427.47
+        "liquidity_usd": 2340456.51,
+        "volume_24h": 1803441.99
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1507029.14,
-        "volume_24h": 61140.25
+        "liquidity_usd": 1494712.15,
+        "volume_24h": 67767.68
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1507029.14,
-        "volume_24h": 61140.25
+        "liquidity_usd": 1494712.15,
+        "volume_24h": 67767.68
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3575080.06,
-        "volume_24h": 168506.52
+        "liquidity_usd": 3576331.74,
+        "volume_24h": 134613.36
       },
       "volume": {
         "name": "LayerZero V2",
-        "liquidity_usd": 413830.96,
-        "volume_24h": 993331.56
+        "liquidity_usd": 392158.74,
+        "volume_24h": 1378998.37
       }
     },
     "bsc": {},
     "polygon": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 9412286.45,
-        "volume_24h": 627542.66
+        "liquidity_usd": 9421619.71,
+        "volume_24h": 591836.35
       },
       "volume": {
         "name": "Convex Finance",
-        "liquidity_usd": 9412286.45,
-        "volume_24h": 627542.66
+        "liquidity_usd": 9421619.71,
+        "volume_24h": 591836.35
       }
     }
   },
   "top_projects": [
     {
       "name": "LayerZero V2",
-      "score": 60,
-      "chain": "base"
-    },
-    {
-      "name": "Anemoy Capital",
-      "score": 59,
+      "score": 56,
       "chain": "base"
     },
     {
       "name": "Aster Bridge",
       "score": 50,
       "chain": "ethereum"
+    },
+    {
+      "name": "Anemoy Capital",
+      "score": 49,
+      "chain": "base"
     }
   ]
 }
