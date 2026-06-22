@@ -3,67 +3,56 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20244973.26,
-        "volume_24h": 1786225.15
+        "liquidity_usd": 20250024.18,
+        "volume_24h": 843595.51
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 2340456.51,
-        "volume_24h": 1803441.99
+        "liquidity_usd": 2304776.63,
+        "volume_24h": 1423915.32
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1494712.15,
-        "volume_24h": 67767.68
+        "liquidity_usd": 1491910.04,
+        "volume_24h": 71184.49
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1494712.15,
-        "volume_24h": 67767.68
+        "liquidity_usd": 1491910.04,
+        "volume_24h": 71184.49
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3576331.74,
-        "volume_24h": 134613.36
+        "liquidity_usd": 3577550.37,
+        "volume_24h": 671158.97
       },
       "volume": {
         "name": "LayerZero V2",
-        "liquidity_usd": 392158.74,
-        "volume_24h": 1378998.37
+        "liquidity_usd": 392808.0,
+        "volume_24h": 1157081.86
       }
     },
     "bsc": {},
-    "polygon": {
-      "liquidity": {
-        "name": "Convex Finance",
-        "liquidity_usd": 9421619.71,
-        "volume_24h": 591836.35
-      },
-      "volume": {
-        "name": "Convex Finance",
-        "liquidity_usd": 9421619.71,
-        "volume_24h": 591836.35
-      }
-    }
+    "polygon": {}
   },
   "top_projects": [
     {
       "name": "LayerZero V2",
-      "score": 56,
+      "score": 60,
       "chain": "base"
     },
     {
-      "name": "Aster Bridge",
-      "score": 50,
-      "chain": "ethereum"
+      "name": "Anemoy Capital",
+      "score": 59,
+      "chain": "base"
     },
     {
-      "name": "Anemoy Capital",
-      "score": 49,
+      "name": "Aave V3",
+      "score": 52,
       "chain": "base"
     }
   ]
