@@ -3,37 +3,37 @@
     "ethereum": {
       "liquidity": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20247958.56,
-        "volume_24h": 5248811.53
+        "liquidity_usd": 20122695.54,
+        "volume_24h": 5921415.63
       },
       "volume": {
         "name": "Avalon USDa",
-        "liquidity_usd": 20247958.56,
-        "volume_24h": 5248811.53
+        "liquidity_usd": 20122695.54,
+        "volume_24h": 5921415.63
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1472544.94,
-        "volume_24h": 59284.41
+        "liquidity_usd": 950058.13,
+        "volume_24h": 249646.15
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1472544.94,
-        "volume_24h": 59284.41
+        "liquidity_usd": 950058.13,
+        "volume_24h": 249646.15
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3580044.64,
-        "volume_24h": 1905899.1
+        "liquidity_usd": 3572012.02,
+        "volume_24h": 1857731.06
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3580044.64,
-        "volume_24h": 1905899.1
+        "liquidity_usd": 3572012.02,
+        "volume_24h": 1857731.06
       }
     },
     "bsc": {},
@@ -46,13 +46,13 @@
       "chain": "base"
     },
     {
-      "name": "Aave V3",
+      "name": "LayerZero V2",
       "score": 60,
       "chain": "base"
     },
     {
-      "name": "LayerZero V2",
-      "score": 60,
+      "name": "Aave V3",
+      "score": 52,
       "chain": "base"
     }
   ]
