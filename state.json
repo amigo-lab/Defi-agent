@@ -3,67 +3,56 @@
     "ethereum": {
       "liquidity": {
         "name": "Hastra",
-        "liquidity_usd": 9000318.76,
-        "volume_24h": 70064.3
+        "liquidity_usd": 9001245.46,
+        "volume_24h": 1262264.84
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 1844298.03,
-        "volume_24h": 2894851.88
+        "liquidity_usd": 1857107.02,
+        "volume_24h": 1608980.79
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 925331.63,
-        "volume_24h": 178120.93
+        "liquidity_usd": 946220.68,
+        "volume_24h": 571865.38
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 925331.63,
-        "volume_24h": 178120.93
+        "liquidity_usd": 946220.68,
+        "volume_24h": 571865.38
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3558988.83,
-        "volume_24h": 679285.2
+        "liquidity_usd": 3567217.53,
+        "volume_24h": 2601520.23
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3558988.83,
-        "volume_24h": 679285.2
+        "liquidity_usd": 3567217.53,
+        "volume_24h": 2601520.23
       }
     },
     "bsc": {},
-    "polygon": {
-      "liquidity": {
-        "name": "Convex Finance",
-        "liquidity_usd": 9872630.11,
-        "volume_24h": 1081237.98
-      },
-      "volume": {
-        "name": "Convex Finance",
-        "liquidity_usd": 9872630.11,
-        "volume_24h": 1081237.98
-      }
-    }
+    "polygon": {}
   },
   "top_projects": [
+    {
+      "name": "Anemoy Capital",
+      "score": 67,
+      "chain": "base"
+    },
     {
       "name": "Aster Bridge",
       "score": 60,
       "chain": "ethereum"
     },
     {
-      "name": "Anemoy Capital",
-      "score": 59,
-      "chain": "base"
-    },
-    {
       "name": "Hastra",
-      "score": 29,
+      "score": 39,
       "chain": "ethereum"
     }
   ]
