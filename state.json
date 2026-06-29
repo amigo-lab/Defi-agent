@@ -2,51 +2,51 @@
   "chain_leaders": {
     "ethereum": {
       "liquidity": {
-        "name": "Avalon USDa",
-        "liquidity_usd": 19170899.93,
-        "volume_24h": 263964.95
+        "name": "Hastra",
+        "liquidity_usd": 9000318.76,
+        "volume_24h": 70064.3
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 1853111.94,
-        "volume_24h": 2616910.77
+        "liquidity_usd": 1844298.03,
+        "volume_24h": 2894851.88
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 896045.09,
-        "volume_24h": 143501.68
+        "liquidity_usd": 925331.63,
+        "volume_24h": 178120.93
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 896045.09,
-        "volume_24h": 143501.68
+        "liquidity_usd": 925331.63,
+        "volume_24h": 178120.93
       }
     },
     "base": {
       "liquidity": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3549734.82,
-        "volume_24h": 71294.44
+        "liquidity_usd": 3558988.83,
+        "volume_24h": 679285.2
       },
       "volume": {
         "name": "Anemoy Capital",
-        "liquidity_usd": 3549734.82,
-        "volume_24h": 71294.44
+        "liquidity_usd": 3558988.83,
+        "volume_24h": 679285.2
       }
     },
     "bsc": {},
     "polygon": {
       "liquidity": {
         "name": "Convex Finance",
-        "liquidity_usd": 9956049.53,
-        "volume_24h": 958273.6
+        "liquidity_usd": 9872630.11,
+        "volume_24h": 1081237.98
       },
       "volume": {
         "name": "Convex Finance",
-        "liquidity_usd": 9956049.53,
-        "volume_24h": 958273.6
+        "liquidity_usd": 9872630.11,
+        "volume_24h": 1081237.98
       }
     }
   },
@@ -58,13 +58,13 @@
     },
     {
       "name": "Anemoy Capital",
-      "score": 49,
+      "score": 59,
       "chain": "base"
     },
     {
-      "name": "Convex Finance",
-      "score": 24,
-      "chain": "polygon"
+      "name": "Hastra",
+      "score": 29,
+      "chain": "ethereum"
     }
   ]
 }
