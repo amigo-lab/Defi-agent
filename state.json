@@ -2,38 +2,38 @@
   "chain_leaders": {
     "ethereum": {
       "liquidity": {
-        "name": "Convex Finance",
-        "liquidity_usd": 4010588.36,
-        "volume_24h": 168672.41
+        "name": "Hastra",
+        "liquidity_usd": 9000445.78,
+        "volume_24h": 206151.47
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 1883663.89,
-        "volume_24h": 1382057.65
+        "liquidity_usd": 1735927.05,
+        "volume_24h": 1760143.87
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1532348.11,
-        "volume_24h": 55527.23
+        "liquidity_usd": 1513233.89,
+        "volume_24h": 54157.72
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1532348.11,
-        "volume_24h": 55527.23
+        "liquidity_usd": 1513233.89,
+        "volume_24h": 54157.72
       }
     },
     "base": {
       "liquidity": {
         "name": "Aave V3",
-        "liquidity_usd": 702928.07,
-        "volume_24h": 251793.96
+        "liquidity_usd": 703330.89,
+        "volume_24h": 175144.74
       },
       "volume": {
         "name": "Aave V3",
-        "liquidity_usd": 702928.07,
-        "volume_24h": 251793.96
+        "liquidity_usd": 703330.89,
+        "volume_24h": 175144.74
       }
     },
     "bsc": {},
@@ -51,9 +51,9 @@
       "chain": "ethereum"
     },
     {
-      "name": "Pendle",
-      "score": 0,
-      "chain": "arbitrum"
+      "name": "Hastra",
+      "score": 39,
+      "chain": "ethereum"
     }
   ]
 }
