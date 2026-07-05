@@ -8,32 +8,32 @@
       },
       "volume": {
         "name": "Aster Bridge",
-        "liquidity_usd": 1735927.05,
-        "volume_24h": 1760143.87
+        "liquidity_usd": 1696618.41,
+        "volume_24h": 1719359.72
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1513233.89,
-        "volume_24h": 54157.72
+        "liquidity_usd": 1497878.36,
+        "volume_24h": 72242.13
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1513233.89,
-        "volume_24h": 54157.72
+        "liquidity_usd": 1497878.36,
+        "volume_24h": 72242.13
       }
     },
     "base": {
       "liquidity": {
-        "name": "Aave V3",
-        "liquidity_usd": 703330.89,
-        "volume_24h": 175144.74
+        "name": "Venus Core Pool",
+        "liquidity_usd": 717050.5,
+        "volume_24h": 57570.36
       },
       "volume": {
         "name": "Aave V3",
-        "liquidity_usd": 703330.89,
-        "volume_24h": 175144.74
+        "liquidity_usd": 694882.03,
+        "volume_24h": 178530.14
       }
     },
     "bsc": {},
