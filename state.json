@@ -3,67 +3,56 @@
     "ethereum": {
       "liquidity": {
         "name": "Hastra",
-        "liquidity_usd": 9001219.27,
-        "volume_24h": 1479480.54
+        "liquidity_usd": 9003147.15,
+        "volume_24h": 2975931.74
       },
       "volume": {
-        "name": "Aster Bridge",
-        "liquidity_usd": 1709844.12,
-        "volume_24h": 1670882.4
+        "name": "Hastra",
+        "liquidity_usd": 9003147.15,
+        "volume_24h": 2975931.74
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1505943.11,
-        "volume_24h": 57997.81
+        "liquidity_usd": 1503992.64,
+        "volume_24h": 53670.81
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1505943.11,
-        "volume_24h": 57997.81
+        "liquidity_usd": 1503992.64,
+        "volume_24h": 53670.81
       }
     },
     "base": {
       "liquidity": {
-        "name": "Venus Core Pool",
-        "liquidity_usd": 712502.59,
-        "volume_24h": 69504.65
+        "name": "Aave V3",
+        "liquidity_usd": 745739.45,
+        "volume_24h": 293510.11
       },
       "volume": {
         "name": "Aave V3",
-        "liquidity_usd": 702102.54,
-        "volume_24h": 107849.14
+        "liquidity_usd": 745739.45,
+        "volume_24h": 293510.11
       }
     },
     "bsc": {},
-    "polygon": {
-      "liquidity": {
-        "name": "Convex Finance",
-        "liquidity_usd": 10029889.66,
-        "volume_24h": 923161.15
-      },
-      "volume": {
-        "name": "Convex Finance",
-        "liquidity_usd": 10029889.66,
-        "volume_24h": 923161.15
-      }
-    }
+    "polygon": {}
   },
   "top_projects": [
+    {
+      "name": "Aave V3",
+      "score": 70,
+      "chain": "base"
+    },
     {
       "name": "Aster Bridge",
       "score": 60,
       "chain": "ethereum"
     },
     {
-      "name": "Aave V3",
-      "score": 52,
-      "chain": "base"
-    },
-    {
       "name": "Hastra",
-      "score": 39,
+      "score": 47,
       "chain": "ethereum"
     }
   ]
