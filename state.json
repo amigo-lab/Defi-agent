@@ -3,25 +3,25 @@
     "ethereum": {
       "liquidity": {
         "name": "Hastra",
-        "liquidity_usd": 9002606.78,
-        "volume_24h": 2060202.41
+        "liquidity_usd": 9002484.73,
+        "volume_24h": 717303.56
       },
       "volume": {
-        "name": "Hastra",
-        "liquidity_usd": 9002606.78,
-        "volume_24h": 2060202.41
+        "name": "Aster Bridge",
+        "liquidity_usd": 1726134.17,
+        "volume_24h": 1013870.81
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1510696.11,
-        "volume_24h": 65347.0
+        "liquidity_usd": 1538108.13,
+        "volume_24h": 80325.8
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1510696.11,
-        "volume_24h": 65347.0
+        "liquidity_usd": 1538108.13,
+        "volume_24h": 80325.8
       }
     },
     "base": {},
@@ -36,7 +36,7 @@
     },
     {
       "name": "Hastra",
-      "score": 47,
+      "score": 39,
       "chain": "ethereum"
     },
     {
