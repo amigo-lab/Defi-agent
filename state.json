@@ -3,48 +3,32 @@
     "ethereum": {
       "liquidity": {
         "name": "Hastra",
-        "liquidity_usd": 9003147.15,
-        "volume_24h": 2975931.74
+        "liquidity_usd": 9002606.78,
+        "volume_24h": 2060202.41
       },
       "volume": {
         "name": "Hastra",
-        "liquidity_usd": 9003147.15,
-        "volume_24h": 2975931.74
+        "liquidity_usd": 9002606.78,
+        "volume_24h": 2060202.41
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1503992.64,
-        "volume_24h": 53670.81
+        "liquidity_usd": 1510696.11,
+        "volume_24h": 65347.0
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1503992.64,
-        "volume_24h": 53670.81
+        "liquidity_usd": 1510696.11,
+        "volume_24h": 65347.0
       }
     },
-    "base": {
-      "liquidity": {
-        "name": "Aave V3",
-        "liquidity_usd": 745739.45,
-        "volume_24h": 293510.11
-      },
-      "volume": {
-        "name": "Aave V3",
-        "liquidity_usd": 745739.45,
-        "volume_24h": 293510.11
-      }
-    },
+    "base": {},
     "bsc": {},
     "polygon": {}
   },
   "top_projects": [
-    {
-      "name": "Aave V3",
-      "score": 70,
-      "chain": "base"
-    },
     {
       "name": "Aster Bridge",
       "score": 60,
@@ -54,6 +38,11 @@
       "name": "Hastra",
       "score": 47,
       "chain": "ethereum"
+    },
+    {
+      "name": "Pendle",
+      "score": 0,
+      "chain": "arbitrum"
     }
   ]
 }
