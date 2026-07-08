@@ -3,37 +3,37 @@
     "ethereum": {
       "liquidity": {
         "name": "Hastra",
-        "liquidity_usd": 9002470.23,
-        "volume_24h": 2102942.27
+        "liquidity_usd": 9002408.76,
+        "volume_24h": 2131626.69
       },
       "volume": {
-        "name": "Hastra",
-        "liquidity_usd": 9002470.23,
-        "volume_24h": 2102942.27
+        "name": "Aster Bridge",
+        "liquidity_usd": 1561778.58,
+        "volume_24h": 3272704.37
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1522913.35,
-        "volume_24h": 99262.41
+        "liquidity_usd": 1532726.07,
+        "volume_24h": 139039.27
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1522913.35,
-        "volume_24h": 99262.41
+        "liquidity_usd": 1532726.07,
+        "volume_24h": 139039.27
       }
     },
     "base": {
       "liquidity": {
         "name": "Aave V3",
-        "liquidity_usd": 723190.52,
-        "volume_24h": 199795.91
+        "liquidity_usd": 706232.39,
+        "volume_24h": 162436.11
       },
       "volume": {
         "name": "Aave V3",
-        "liquidity_usd": 723190.52,
-        "volume_24h": 199795.91
+        "liquidity_usd": 706232.39,
+        "volume_24h": 162436.11
       }
     },
     "bsc": {},
