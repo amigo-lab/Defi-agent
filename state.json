@@ -3,37 +3,37 @@
     "ethereum": {
       "liquidity": {
         "name": "Hastra",
-        "liquidity_usd": 9002253.95,
-        "volume_24h": 18822674.69
+        "liquidity_usd": 9002374.5,
+        "volume_24h": 1526033.88
       },
       "volume": {
-        "name": "Hastra",
-        "liquidity_usd": 9002253.95,
-        "volume_24h": 18822674.69
+        "name": "Spark Savings",
+        "liquidity_usd": 7081974.1,
+        "volume_24h": 2223938.45
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1607641.09,
-        "volume_24h": 50086.59
+        "liquidity_usd": 1618073.98,
+        "volume_24h": 64662.3
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1607641.09,
-        "volume_24h": 50086.59
+        "liquidity_usd": 1618073.98,
+        "volume_24h": 64662.3
       }
     },
     "base": {
       "liquidity": {
         "name": "Aave V3",
-        "liquidity_usd": 1025661.94,
-        "volume_24h": 445706.85
+        "liquidity_usd": 1052662.21,
+        "volume_24h": 643679.47
       },
       "volume": {
         "name": "Aave V3",
-        "liquidity_usd": 1025661.94,
-        "volume_24h": 445706.85
+        "liquidity_usd": 1052662.21,
+        "volume_24h": 643679.47
       }
     },
     "bsc": {},
@@ -52,7 +52,7 @@
     },
     {
       "name": "Hastra",
-      "score": 47,
+      "score": 39,
       "chain": "ethereum"
     }
   ]
