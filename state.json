@@ -3,56 +3,67 @@
     "ethereum": {
       "liquidity": {
         "name": "Hastra",
-        "liquidity_usd": 9001236.27,
-        "volume_24h": 4921700.81
+        "liquidity_usd": 9001198.55,
+        "volume_24h": 4343458.8
       },
       "volume": {
         "name": "Hastra",
-        "liquidity_usd": 9001236.27,
-        "volume_24h": 4921700.81
+        "liquidity_usd": 9001198.55,
+        "volume_24h": 4343458.8
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1662660.67,
-        "volume_24h": 91356.17
+        "liquidity_usd": 1643773.17,
+        "volume_24h": 73437.48
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1662660.67,
-        "volume_24h": 91356.17
+        "liquidity_usd": 1643773.17,
+        "volume_24h": 73437.48
       }
     },
     "base": {
       "liquidity": {
-        "name": "Aave V3",
-        "liquidity_usd": 890555.03,
-        "volume_24h": 357797.2
+        "name": "Venus Core Pool",
+        "liquidity_usd": 1080549.39,
+        "volume_24h": 52266.52
       },
       "volume": {
         "name": "LayerZero V2",
-        "liquidity_usd": 243117.82,
-        "volume_24h": 562476.12
+        "liquidity_usd": 138680.18,
+        "volume_24h": 398003.06
       }
     },
     "bsc": {},
-    "polygon": {}
+    "polygon": {
+      "liquidity": {
+        "name": "Aave V3",
+        "liquidity_usd": 189086.97,
+        "volume_24h": 85058.88
+      },
+      "volume": {
+        "name": "Aave V3",
+        "liquidity_usd": 189086.97,
+        "volume_24h": 85058.88
+      }
+    }
   },
   "top_projects": [
-    {
-      "name": "Aave V3",
-      "score": 70,
-      "chain": "base"
-    },
     {
       "name": "Aster Bridge",
       "score": 60,
       "chain": "ethereum"
     },
     {
-      "name": "LayerZero V2",
-      "score": 50,
+      "name": "Hastra",
+      "score": 47,
+      "chain": "ethereum"
+    },
+    {
+      "name": "Venus Core Pool",
+      "score": 32,
       "chain": "base"
     }
   ]
