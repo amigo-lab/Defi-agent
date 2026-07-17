@@ -3,52 +3,41 @@
     "ethereum": {
       "liquidity": {
         "name": "Hastra",
-        "liquidity_usd": 9001198.55,
-        "volume_24h": 4343458.8
+        "liquidity_usd": 9002102.8,
+        "volume_24h": 3994316.21
       },
       "volume": {
         "name": "Hastra",
-        "liquidity_usd": 9001198.55,
-        "volume_24h": 4343458.8
+        "liquidity_usd": 9002102.8,
+        "volume_24h": 3994316.21
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1643773.17,
-        "volume_24h": 73437.48
+        "liquidity_usd": 1606142.61,
+        "volume_24h": 71695.05
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1643773.17,
-        "volume_24h": 73437.48
+        "liquidity_usd": 1606142.61,
+        "volume_24h": 71695.05
       }
     },
     "base": {
       "liquidity": {
         "name": "Venus Core Pool",
-        "liquidity_usd": 1080549.39,
-        "volume_24h": 52266.52
+        "liquidity_usd": 988381.93,
+        "volume_24h": 69743.71
       },
       "volume": {
         "name": "LayerZero V2",
-        "liquidity_usd": 138680.18,
-        "volume_24h": 398003.06
+        "liquidity_usd": 135731.71,
+        "volume_24h": 492911.69
       }
     },
     "bsc": {},
-    "polygon": {
-      "liquidity": {
-        "name": "Aave V3",
-        "liquidity_usd": 189086.97,
-        "volume_24h": 85058.88
-      },
-      "volume": {
-        "name": "Aave V3",
-        "liquidity_usd": 189086.97,
-        "volume_24h": 85058.88
-      }
-    }
+    "polygon": {}
   },
   "top_projects": [
     {
