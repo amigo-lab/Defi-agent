@@ -4,36 +4,36 @@
       "liquidity": {
         "name": "Hastra",
         "liquidity_usd": 9002102.8,
-        "volume_24h": 3994316.21
+        "volume_24h": 3994316.09
       },
       "volume": {
         "name": "Hastra",
         "liquidity_usd": 9002102.8,
-        "volume_24h": 3994316.21
+        "volume_24h": 3994316.09
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1606142.61,
-        "volume_24h": 71695.05
+        "liquidity_usd": 1575022.65,
+        "volume_24h": 60491.23
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1606142.61,
-        "volume_24h": 71695.05
+        "liquidity_usd": 1575022.65,
+        "volume_24h": 60491.23
       }
     },
     "base": {
       "liquidity": {
         "name": "Venus Core Pool",
-        "liquidity_usd": 988381.93,
-        "volume_24h": 69743.71
+        "liquidity_usd": 972864.81,
+        "volume_24h": 75952.01
       },
       "volume": {
-        "name": "LayerZero V2",
-        "liquidity_usd": 135731.71,
-        "volume_24h": 492911.69
+        "name": "Venus Core Pool",
+        "liquidity_usd": 972864.81,
+        "volume_24h": 75952.01
       }
     },
     "bsc": {},
