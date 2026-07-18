@@ -3,37 +3,37 @@
     "ethereum": {
       "liquidity": {
         "name": "Hastra",
-        "liquidity_usd": 9002102.8,
-        "volume_24h": 3994316.09
+        "liquidity_usd": 9003459.75,
+        "volume_24h": 12506174.56
       },
       "volume": {
         "name": "Hastra",
-        "liquidity_usd": 9002102.8,
-        "volume_24h": 3994316.09
+        "liquidity_usd": 9003459.75,
+        "volume_24h": 12506174.56
       }
     },
     "arbitrum": {
       "liquidity": {
         "name": "Pendle",
-        "liquidity_usd": 1575022.65,
-        "volume_24h": 60491.23
+        "liquidity_usd": 1597563.74,
+        "volume_24h": 79129.59
       },
       "volume": {
         "name": "Pendle",
-        "liquidity_usd": 1575022.65,
-        "volume_24h": 60491.23
+        "liquidity_usd": 1597563.74,
+        "volume_24h": 79129.59
       }
     },
     "base": {
       "liquidity": {
-        "name": "Venus Core Pool",
-        "liquidity_usd": 972864.81,
-        "volume_24h": 75952.01
+        "name": "LayerZero V2",
+        "liquidity_usd": 186868.55,
+        "volume_24h": 561607.66
       },
       "volume": {
-        "name": "Venus Core Pool",
-        "liquidity_usd": 972864.81,
-        "volume_24h": 75952.01
+        "name": "LayerZero V2",
+        "liquidity_usd": 186868.55,
+        "volume_24h": 561607.66
       }
     },
     "bsc": {},
@@ -51,8 +51,8 @@
       "chain": "ethereum"
     },
     {
-      "name": "Venus Core Pool",
-      "score": 32,
+      "name": "LayerZero V2",
+      "score": 34,
       "chain": "base"
     }
   ]
